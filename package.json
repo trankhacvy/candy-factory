@@ -6,6 +6,7 @@
     "dev": "turbo dev --no-cache  --continue",
     "web:dev": "turbo dev --no-cache  --continue --filter=web",
     "web:build": "turbo build --no-cache  --continue --filter=web",
+    "api:dev": "turbo start:dev --filter=be",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo lint",
     "test": "turbo test",

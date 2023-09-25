@@ -22,6 +22,11 @@
       "cache": false,
       "persistent": true
     },
+    "start:dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
     "clean": {
       "cache": false
     }
