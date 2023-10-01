@@ -11,23 +11,24 @@ import facebookConfig from './config/facebook.config';
 import googleConfig from './config/google.config';
 import twitterConfig from './config/twitter.config';
 import appleConfig from './config/apple.config';
-import path from 'path';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import solanaConfig from './config/solana.config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthAppleModule } from './auth-apple/auth-apple.module';
 import { AuthFacebookModule } from './auth-facebook/auth-facebook.module';
 import { AuthGoogleModule } from './auth-google/auth-google.module';
 import { AuthTwitterModule } from './auth-twitter/auth-twitter.module';
-// import { I18nModule } from 'nestjs-i18n/dist/i18n.module';
-// import { HeaderResolver } from 'nestjs-i18n';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { ForgotModule } from './forgot/forgot.module';
-import { MailModule } from './mail/mail.module';
 import { HomeModule } from './home/home.module';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { AllConfigType } from './config/config.type';
 import { SessionModule } from './session/session.module';
-import { MailerModule } from './mailer/mailer.module';
+import { AudiencesModule } from './audiences/audiences.module';
+import { AudienceGroupsModule } from './audience-groups/audience-groups.module';
+import { NFTsModule } from './nfts/nfts.module';
+import { CampaignsModule } from './campaigns/campaigns.module';
+import { AudienceSubscriber } from './subscriber/audience-subscriber';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { MailerModule } from './mailer/mailer.module';
         googleConfig,
         twitterConfig,
         appleConfig,
+        solanaConfig,
       ],
       envFilePath: ['.env'],
     }),
@@ -52,29 +54,6 @@ import { MailerModule } from './mailer/mailer.module';
         return new DataSource(options).initialize();
       },
     }),
-    // I18nModule.forRootAsync({
-    //   useFactory: (configService: ConfigService<AllConfigType>) => ({
-    //     fallbackLanguage: configService.getOrThrow('app.fallbackLanguage', {
-    //       infer: true,
-    //     }),
-    //     loaderOptions: { path: path.join(__dirname, '/i18n/'), watch: true },
-    //   }),
-    //   resolvers: [
-    //     {
-    //       use: HeaderResolver,
-    //       useFactory: (configService: ConfigService<AllConfigType>) => {
-    //         return [
-    //           configService.get('app.headerLanguage', {
-    //             infer: true,
-    //           }),
-    //         ];
-    //       },
-    //       inject: [ConfigService],
-    //     },
-    //   ],
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    // }),
     UsersModule,
     FilesModule,
     AuthModule,
@@ -84,9 +63,13 @@ import { MailerModule } from './mailer/mailer.module';
     AuthAppleModule,
     ForgotModule,
     SessionModule,
-    // MailModule,
-    // MailerModule,
     HomeModule,
+    AudiencesModule,
+    AudienceGroupsModule,
+    NFTsModule,
+    CampaignsModule,
+    SharedModule,
   ],
+  providers: [AudienceSubscriber],
 })
 export class AppModule {}

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import { AllConfigType } from 'src/config/config.type';
+import { AudienceSubscriber } from 'src/subscriber/audience-subscriber';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -25,6 +26,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         this.configService.get('app.nodeEnv', { infer: true }) !== 'production',
       entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+      // subscribers: [AudienceSubscriber],
       cli: {
         entitiesDir: 'src',
         migrationsDir: 'src/database/migrations',
