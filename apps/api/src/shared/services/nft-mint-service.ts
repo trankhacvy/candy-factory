@@ -22,8 +22,6 @@ import {
 } from '@metaplex-foundation/mpl-bubblegum';
 import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-  createAllocTreeIx,
-  ValidDepthSizePair,
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression';
 import {

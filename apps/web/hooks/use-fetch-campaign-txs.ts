@@ -1,17 +1,11 @@
 import useSWR from "swr"
-import supabase from "@/lib/supabase"
+import api from "@/lib/api"
+import { useSession } from "next-auth/react"
 
 export function useFetchCampaignTxs(id?: string) {
-  return useSWR(id ? ["useFetchCampaignTxs", id] : null, async () => {
-    try {
-      const { data, error } = await supabase
-        .from("tbl_campaign_transactions")
-        .select("*")
-        .eq("campaign_id", id ?? "")
-      if (error) throw error
-      return data
-    } catch (error) {
-      return []
-    }
-  })
+  const { data: session } = useSession()
+
+  return useSWR(session && id ? "fetch-drops" : null, () =>
+    api.withToken(session?.accessToken).getDropTransactions(id!)
+  )
 }

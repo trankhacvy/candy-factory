@@ -109,10 +109,12 @@ export class NFTsService {
 
   findManyWithPagination(
     paginationOptions: IPaginationOptions,
+    where?: EntityCondition<NFT>,
   ): Promise<NFT[]> {
     return this.nftsRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      where,
     });
   }
 

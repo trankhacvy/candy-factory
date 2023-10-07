@@ -16,11 +16,13 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/toast"
 import { Uploader } from "@/components/ui/uploader"
 import { Typography } from "../ui/typography"
+import { useSession } from "next-auth/react"
+import api from "@/lib/api"
 
 export const nftFormSchema = z.object({
   // collection
-  collectionMedia: z.string({ required_error: "This field is required." }).trim().min(1, "This field is required."),
-  // collectionMedia: z.any().refine((file) => !!file, "Media is required."),
+  // collectionMedia: z.string({ required_error: "This field is required." }).trim().min(1, "This field is required."),
+  collectionMedia: z.any().refine((file) => !!file, "Media is required."),
   collectionName: z
     .string({ required_error: "This field is required." })
     .trim()
@@ -42,8 +44,8 @@ export const nftFormSchema = z.object({
     .max(256, `The maximum allowed length for this field is 256 characters`)
     .optional(),
   //nft
-  media: z.string({ required_error: "This field is required." }).trim().min(1, "This field is required."),
-  // media: z.any().refine((file) => !!file, "Media is required."),
+  // media: z.string({ required_error: "This field is required." }).trim().min(1, "This field is required."),
+  media: z.any().refine((file) => !!file, "Media is required."),
   name: z
     .string({ required_error: "This field is required." })
     .trim()
@@ -80,6 +82,7 @@ export const nftFormSchema = z.object({
 })
 
 export function NewNFTForm() {
+  const { data: session } = useSession()
   const { toast } = useToast()
   const { push } = useRouter()
   const { connected, publicKey } = useWallet()
@@ -115,9 +118,25 @@ export function NewNFTForm() {
         return
       }
 
-      const result = await createNFT(values)
+      const formData = new FormData()
+      Object.keys(values).forEach((key) => {
+        if (key === "media") {
+          console.log(values[key])
+          formData.append("image", values[key])
+        } else if (key === "collectionMedia") {
+          formData.append("collectionImage", values[key])
+        } else if (key === "attributes") {
+          formData.append("attributes", JSON.stringify(values[key]))
+        } else {
+          // @ts-ignore
+          formData.append(key, values[key])
+        }
+      })
 
-      if (result.success) {
+      // const result = await createNFT(formData)
+      const result = await api.withToken(session?.accessToken).createNFT(formData)
+
+      if (result) {
         toast({
           variant: "success",
           title: "Your NFT created successfully",
@@ -127,7 +146,7 @@ export function NewNFTForm() {
         toast({
           variant: "error",
           title: "Error",
-          description: result.error || "Unknown error",
+          description: "Unknown error",
         })
       }
     } catch (error: any) {
@@ -172,11 +191,12 @@ export function NewNFTForm() {
                           onChange={(files) => {
                             const file = files?.[0] as any
                             if (file) {
-                              const reader = new FileReader()
-                              reader.onload = (e) => {
-                                field.onChange(e.target?.result as string)
-                              }
-                              reader.readAsDataURL(file)
+                              field.onChange(file)
+                              // const reader = new FileReader()
+                              // reader.onload = (e) => {
+                              //   field.onChange(e.target?.result as string)
+                              // }
+                              // reader.readAsDataURL(file)
                             }
                           }}
                         />
@@ -287,11 +307,12 @@ export function NewNFTForm() {
                           onChange={(files) => {
                             const file = files?.[0] as any
                             if (file) {
-                              const reader = new FileReader()
-                              reader.onload = (e) => {
-                                field.onChange(e.target?.result as string)
-                              }
-                              reader.readAsDataURL(file)
+                              field.onChange(file)
+                              // const reader = new FileReader()
+                              // reader.onload = (e) => {
+                              //   field.onChange(e.target?.result as string)
+                              // }
+                              // reader.readAsDataURL(file)
                             }
                           }}
                         />

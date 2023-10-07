@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { Typography } from "@/components/ui/typography"
 import { cn } from "@/utils/cn"
 import { DashboardNavMobile } from "./nav"
+import { signOut } from "next-auth/react"
 
 export default function DashboardHeader() {
   const [small, setSmall] = useState(false)
@@ -69,7 +70,15 @@ function AdminUserMenu() {
         <Separator />
         <div className="p-2">
           <li className="cursor-pointer list-none rounded-md px-2 py-1.5 hover:bg-gray-500/8">
-            <Typography as="span" level="body4">
+            <Typography
+              onClick={() => {
+                signOut({
+                  callbackUrl: "/login",
+                })
+              }}
+              as="span"
+              level="body4"
+            >
               Logout
             </Typography>
           </li>

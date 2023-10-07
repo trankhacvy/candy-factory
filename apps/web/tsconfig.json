@@ -17,6 +17,7 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": ".",
+    "typeRoots": ["types/next-auth.d.ts"],
     "paths": {
       "@/*": ["./*"]
     },

@@ -6,6 +6,7 @@ import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adap
 import { useMemo } from "react"
 import { SOLANA_CLUSTER, SOLANA_PRC } from "@/config/env"
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base"
+import { SessionProvider } from "next-auth/react"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const network = SOLANA_CLUSTER as WalletAdapterNetwork
@@ -15,7 +16,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ConnectionProvider endpoint={SOLANA_PRC}>
       <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>{children}</WalletModalProvider>
+        <WalletModalProvider>
+          <SessionProvider>{children}</SessionProvider>
+        </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   )

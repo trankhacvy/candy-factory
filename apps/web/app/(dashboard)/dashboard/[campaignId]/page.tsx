@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react"
-import { CampaignTransactions } from "@/components/campaign/campaigns-transaction"
-import { NewCampaignModal } from "@/components/campaign/new-campaign-modal"
+import { DropTransactions } from "@/components/drops/drop-transactions"
+// import { NewCampaignModal } from "@/components/drops/new-campaign-modal"
 import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/typography"
 
@@ -12,11 +12,11 @@ export default function CampaignDetails() {
           <Typography as="h4" level="body1" className="font-bold lg:text-2xl">
             Campaign detail
           </Typography>
-          <NewCampaignModal trigger={<Button startDecorator={<Plus />}>New Campaign</Button>} />
+          {/* <NewCampaignModal trigger={<Button startDecorator={<Plus />}>New Campaign</Button>} /> */}
         </div>
       </div>
 
-      <CampaignTransactions />
+      <DropTransactions />
     </div>
   )
 }

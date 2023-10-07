@@ -2,12 +2,12 @@
 
 import dayjs from "dayjs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useFetchContacts } from "@/hooks/use-contact-table"
+import { useFetchContactGroups } from "@/hooks/use-fetch-contact-groups"
 import { Skeleton } from "../ui/skeleton"
 import { Typography } from "../ui/typography"
 
 export function ContactsTable() {
-  const { data, isLoading } = useFetchContacts()
+  const { data, isLoading } = useFetchContactGroups()
 
   if (isLoading) {
     return (
@@ -42,15 +42,15 @@ export function ContactsTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((contact) => (
-            <TableRow key={contact.id}>
+          {data?.data?.data.map((group) => (
+            <TableRow key={group.id}>
               <TableCell>
-                <Typography className="font-medium">{contact.name}</Typography>
+                <Typography className="font-medium">{group.name}</Typography>
               </TableCell>
-              <TableCell>{contact.audiences.length}</TableCell>
+              <TableCell>{group.numOfAudience}</TableCell>
               <TableCell>
                 <Typography color="secondary" level="body4">
-                  {dayjs(contact.created_at).format("DD/MM/YYYY")}
+                  {dayjs(group.createdAt).format("DD/MM/YYYY")}
                 </Typography>
               </TableCell>
             </TableRow>

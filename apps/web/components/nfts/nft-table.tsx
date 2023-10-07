@@ -43,18 +43,24 @@ export function NFTTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((nft) => (
+          {data?.data?.data?.map((nft) => (
             <TableRow key={nft.id}>
               <TableCell>
                 <div className="flex items-center gap-4">
-                  <Image className="rounded-lg" src={nft.image ?? ""} alt={nft.name ?? ""} width={48} height={48} />
+                  <Image
+                    className="rounded-lg w-12 h-12 overflow-hidden"
+                    src={nft.image ?? ""}
+                    alt={nft.name ?? ""}
+                    width={48}
+                    height={48}
+                  />
                   <Typography className="font-medium">{nft.name}</Typography>
                 </div>
               </TableCell>
-              <TableCell>{nft.collection_name}</TableCell>
+              <TableCell>{nft.collectionName}</TableCell>
               <TableCell>
                 <Typography color="secondary" level="body4">
-                  {dayjs(nft.created_at).format("DD/MM/YYYY")}
+                  {dayjs(nft.createdAt).format("DD/MM/YYYY")}
                 </Typography>
               </TableCell>
             </TableRow>

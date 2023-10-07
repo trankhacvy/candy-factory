@@ -16,10 +16,10 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 @Module({
   imports: [
     UsersModule,
-    ForgotModule,
+    // ForgotModule,
     SessionModule,
     PassportModule,
-    MailModule,
+    // MailModule,
     JwtModule.register({}),
   ],
   controllers: [AuthController],

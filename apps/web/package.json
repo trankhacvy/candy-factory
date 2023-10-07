@@ -19,7 +19,8 @@
     "e2e:ui": "playwright test --ui",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "postinstall": "npx patch-package -y",
-    "supabase:types": "supabase gen types typescript --project-id pecgscqfranrwqxijlmv > types/supabase.types.ts"
+    "supabase:types": "supabase gen types typescript --project-id pecgscqfranrwqxijlmv > types/supabase.types.ts",
+    "schema": "swagger-typescript-api --no-client -p http://localhost:8080/docs-json -o ./types -n schema.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.1.1",
@@ -63,17 +64,21 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.244.0",
     "next": "^13.5.1",
+    "next-auth": "^4.23.2",
     "next-compose-plugins": "^2.2.1",
     "next-seo": "^6.1.0",
     "nft.storage": "^7.1.1",
+    "query-string": "^8.1.0",
     "react": "^18.2.0",
     "react-csv-reader": "^4.0.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.44.3",
+    "swagger-typescript-api": "^13.0.3",
     "swr": "^2.2.2",
     "tailwind-merge": "^1.10.0",
     "tailwind-variants": "^0.1.8",
+    "tweetnacl": "^1.0.3",
     "zod": "^3.21.4"
   },
   "devDependencies": {

@@ -4,6 +4,7 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -11,6 +12,7 @@ import {
 import { EntityHelper } from 'src/utils/entity-helper';
 import { IsOptional, MaxLength } from 'class-validator';
 import { Campaign } from 'src/campaigns/entities/campaigns.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Entity()
 export class NFT extends EntityHelper {
@@ -77,12 +79,18 @@ export class NFT extends EntityHelper {
   @Column({ type: String, nullable: true })
   collectionExternalUrl?: string;
 
-  @OneToOne(() => Campaign, (campaign) => campaign.nft, {
+  @OneToOne(() => Campaign, (campaign) => campaign.nft)
+  campaign?: Campaign;
+
+  @ManyToOne(() => User, (user) => user.nfts, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  @JoinColumn({ name: 'campaign_id' })
-  campaign?: Campaign;
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
+
+  @Column({ type: 'int8', name: 'user_id' })
+  userId!: number;
 
   @CreateDateColumn()
   createdAt: Date;

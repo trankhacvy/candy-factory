@@ -18,18 +18,18 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/roles/roles.decorator';
-import { RoleEnum } from 'src/roles/roles.enum';
-import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/roles/roles.guard';
+// import { Roles } from 'src/roles/roles.decorator';
+// import { RoleEnum } from 'src/roles/roles.enum';
+// import { AuthGuard } from '@nestjs/passport';
+// import { RolesGuard } from 'src/roles/roles.guard';
 import { infinityPagination } from 'src/utils/infinity-pagination';
 import { User } from './entities/user.entity';
 import { InfinityPaginationResultType } from '../utils/types/infinity-pagination-result.type';
 import { NullableType } from '../utils/types/nullable.type';
 
-@ApiBearerAuth()
-@Roles(RoleEnum.admin)
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+// @ApiBearerAuth()
+// @Roles(RoleEnum.admin)
+// @UseGuards(AuthGuard('jwt'), RolesGuard)
 @ApiTags('Users')
 @Controller({
   path: 'users',
@@ -78,17 +78,17 @@ export class UsersController {
     return this.usersService.findOne({ id: +id });
   }
 
-  @SerializeOptions({
-    groups: ['admin'],
-  })
-  @Patch(':id')
-  @HttpCode(HttpStatus.OK)
-  update(
-    @Param('id') id: number,
-    @Body() updateProfileDto: UpdateUserDto,
-  ): Promise<User> {
-    return this.usersService.update(id, updateProfileDto);
-  }
+  // @SerializeOptions({
+  //   groups: ['admin'],
+  // })
+  // @Patch(':id')
+  // @HttpCode(HttpStatus.OK)
+  // update(
+  //   @Param('id') id: number,
+  //   @Body() updateProfileDto: UpdateUserDto,
+  // ): Promise<User> {
+  //   return this.usersService.update(id, updateProfileDto);
+  // }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

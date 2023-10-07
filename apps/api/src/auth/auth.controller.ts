@@ -12,7 +12,12 @@ import {
   SerializeOptions,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { AuthForgotPasswordDto } from './dto/auth-forgot-password.dto';
 import { AuthConfirmEmailDto } from './dto/auth-confirm-email.dto';
@@ -35,55 +40,66 @@ export class AuthController {
   @SerializeOptions({
     groups: ['me'],
   })
-  @Post('email/login')
+  @Post('wallet/login')
   @HttpCode(HttpStatus.OK)
-  public login(
+  public walletLogin(
     @Body() loginDto: AuthEmailLoginDto,
   ): Promise<LoginResponseType> {
-    return this.service.validateLogin(loginDto, false);
+    return this.service.walletLogin(loginDto);
   }
 
-  @SerializeOptions({
-    groups: ['me'],
-  })
-  @Post('admin/email/login')
-  @HttpCode(HttpStatus.OK)
-  public adminLogin(
-    @Body() loginDTO: AuthEmailLoginDto,
-  ): Promise<LoginResponseType> {
-    return this.service.validateLogin(loginDTO, true);
-  }
+  // @SerializeOptions({
+  //   groups: ['me'],
+  // })
+  // @Post('email/login')
+  // @HttpCode(HttpStatus.OK)
+  // public login(
+  //   @Body() loginDto: AuthEmailLoginDto,
+  // ): Promise<LoginResponseType> {
+  //   return this.service.validateLogin(loginDto);
+  // }
 
-  @Post('email/register')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async register(@Body() createUserDto: AuthRegisterLoginDto): Promise<void> {
-    return this.service.register(createUserDto);
-  }
+  // @SerializeOptions({
+  //   groups: ['me'],
+  // })
+  // @Post('admin/email/login')
+  // @HttpCode(HttpStatus.OK)
+  // public adminLogin(
+  //   @Body() loginDTO: AuthEmailLoginDto,
+  // ): Promise<LoginResponseType> {
+  //   return this.service.validateLogin(loginDTO, true);
+  // }
 
-  @Post('email/confirm')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async confirmEmail(
-    @Body() confirmEmailDto: AuthConfirmEmailDto,
-  ): Promise<void> {
-    return this.service.confirmEmail(confirmEmailDto.hash);
-  }
+  // @Post('email/register')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async register(@Body() createUserDto: AuthRegisterLoginDto): Promise<void> {
+  //   return this.service.register(createUserDto);
+  // }
 
-  @Post('forgot/password')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async forgotPassword(
-    @Body() forgotPasswordDto: AuthForgotPasswordDto,
-  ): Promise<void> {
-    return this.service.forgotPassword(forgotPasswordDto.email);
-  }
+  // @Post('email/confirm')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async confirmEmail(
+  //   @Body() confirmEmailDto: AuthConfirmEmailDto,
+  // ): Promise<void> {
+  //   return this.service.confirmEmail(confirmEmailDto.hash);
+  // }
 
-  @Post('reset/password')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  resetPassword(@Body() resetPasswordDto: AuthResetPasswordDto): Promise<void> {
-    return this.service.resetPassword(
-      resetPasswordDto.hash,
-      resetPasswordDto.password,
-    );
-  }
+  // @Post('forgot/password')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async forgotPassword(
+  //   @Body() forgotPasswordDto: AuthForgotPasswordDto,
+  // ): Promise<void> {
+  //   return this.service.forgotPassword(forgotPasswordDto.email);
+  // }
+
+  // @Post('reset/password')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // resetPassword(@Body() resetPasswordDto: AuthResetPasswordDto): Promise<void> {
+  //   return this.service.resetPassword(
+  //     resetPasswordDto.hash,
+  //     resetPasswordDto.password,
+  //   );
+  // }
 
   @ApiBearerAuth()
   @SerializeOptions({
@@ -92,6 +108,10 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({
+    status: 200,
+    type: User,
+  })
   public me(@Request() request): Promise<NullableType<User>> {
     return this.service.me(request.user);
   }
@@ -119,19 +139,19 @@ export class AuthController {
     });
   }
 
-  @ApiBearerAuth()
-  @SerializeOptions({
-    groups: ['me'],
-  })
-  @Patch('me')
-  @UseGuards(AuthGuard('jwt'))
-  @HttpCode(HttpStatus.OK)
-  public update(
-    @Request() request,
-    @Body() userDto: AuthUpdateDto,
-  ): Promise<NullableType<User>> {
-    return this.service.update(request.user, userDto);
-  }
+  // @ApiBearerAuth()
+  // @SerializeOptions({
+  //   groups: ['me'],
+  // })
+  // @Patch('me')
+  // @UseGuards(AuthGuard('jwt'))
+  // @HttpCode(HttpStatus.OK)
+  // public update(
+  //   @Request() request,
+  //   @Body() userDto: AuthUpdateDto,
+  // ): Promise<NullableType<User>> {
+  //   return this.service.update(request.user, userDto);
+  // }
 
   @ApiBearerAuth()
   @Delete('me')

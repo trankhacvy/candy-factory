@@ -28,6 +28,21 @@ export class AudiencesService {
     );
   }
 
+  async bulkCreate(dto: CreateAudienceDto[]): Promise<Audience[]> {
+    const group = await this.audienceGroupsService.findOne({
+      id: dto[0].groupId,
+    });
+
+    return this.audiencesRepository.save(
+      this.audiencesRepository.create(
+        dto.map((item) => ({
+          wallet: item.wallet,
+          group,
+        })),
+      ),
+    );
+  }
+
   update(
     id: Audience['id'],
     payload: DeepPartial<Audience>,

@@ -7,7 +7,6 @@ import CSVReader from "react-csv-reader"
 import { useForm } from "react-hook-form"
 import { mutate } from "swr"
 import * as z from "zod"
-import { createContactGroup } from "@/app/(dashboard)/dashboard/contacts/contacts.action"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -17,13 +16,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { validateSolanaPublicKeys } from "@/utils/keypair"
 import ConnectWalletButton from "../connect-wallet-button"
 import { IconButton } from "../ui/icon-button"
 import { Input } from "../ui/input"
 import { useToast } from "../ui/toast"
+import api from "@/lib/api"
+import { useSession } from "next-auth/react"
 
 type NewTierDialogProps = {
   trigger: React.ReactNode
@@ -37,7 +39,7 @@ export const contactGroupFormSchema = z.object({
     .trim()
     .min(1, "This field is required.")
     .max(32, `The maximum allowed length for this field is 100 characters`),
-  wallets: z.array(z.string().trim().length(44, "Invalid wallet address")),
+  csv: z.any().refine((file) => !!file, "Csv file is required."),
 })
 
 const papaparseOptions = {
@@ -49,6 +51,7 @@ const papaparseOptions = {
 
 export const NewContactModal = ({ trigger, isOpen, onOpenChange }: NewTierDialogProps) => {
   const { toast } = useToast()
+  const { data: session } = useSession()
   const wallet = useWallet()
   const { publicKey } = wallet
 
@@ -56,26 +59,32 @@ export const NewContactModal = ({ trigger, isOpen, onOpenChange }: NewTierDialog
     resolver: zodResolver(contactGroupFormSchema),
     defaultValues: {
       name: "",
-      wallets: [] as string[],
     },
   })
 
+  const { setError, clearErrors } = form
+
   const onSubmit = async (values: z.infer<typeof contactGroupFormSchema>) => {
     try {
-      const result = await createContactGroup(values)
+      const formData = new FormData()
+      formData.append("name", values.name)
+      formData.append("isFavorite", "false")
+      formData.append("file", values.csv)
 
-      if (result.success) {
+      const { statusCode, error } = await api.withToken(session?.accessToken).createGroupWithCsv(formData)
+
+      if (statusCode === 201) {
         toast({
           variant: "success",
           title: "New contact created successfully",
         })
-        await mutate("useFetchContacts")
+        await mutate("get-contact-groups")
         onOpenChange?.(false)
       } else {
         toast({
           variant: "error",
           title: "Error",
-          description: result.error || "Unknown error",
+          description: error || "Unknown error",
         })
       }
     } catch (error: any) {
@@ -91,7 +100,7 @@ export const NewContactModal = ({ trigger, isOpen, onOpenChange }: NewTierDialog
     <>
       <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
         <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
-        <AlertDialogContent className="max-h-[calc(100vh-80px)] max-w-md overflow-auto">
+        <AlertDialogContent className="max-h-[calc(100vh-80px)] max-w-lg overflow-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>New contact group</AlertDialogTitle>
           </AlertDialogHeader>
@@ -114,20 +123,43 @@ export const NewContactModal = ({ trigger, isOpen, onOpenChange }: NewTierDialog
 
               <FormField
                 control={form.control}
-                name="wallets"
+                name="csv"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Wallets</FormLabel>
                     <FormControl>
                       <CSVReader
-                        onFileLoaded={(data) => {
+                        onFileLoaded={(data, _, originalFile) => {
+                          if (!data || data.length === 0) {
+                            setError("csv", { type: "custom", message: "Invalid CSV file content" })
+                            return
+                          }
+
+                          const header = data[0]
+
+                          if (!Array.isArray(header) || header.length !== 1) {
+                            setError("csv", {
+                              type: "custom",
+                              message: "Please upload a CSV file with only one column.",
+                            })
+                            return
+                          }
+
+                          clearErrors("csv")
+
                           const wallets = validateSolanaPublicKeys(data)
-                          field.onChange(wallets)
+                          console.log("wallets", wallets.length)
+                          field.onChange(originalFile)
                         }}
                         parserOptions={papaparseOptions}
                       />
                     </FormControl>
                     <FormMessage />
+
+                    <FormDescription>
+                      Upload a CSV or TSV file. The first row should be the headers of the table, and your headers
+                      should not include any special characters other than hyphens (-) or underscores(_)
+                    </FormDescription>
                   </FormItem>
                 )}
               />
@@ -157,5 +189,34 @@ export const NewContactModal = ({ trigger, isOpen, onOpenChange }: NewTierDialog
         </AlertDialogContent>
       </AlertDialog>
     </>
+  )
+}
+
+const AddressesTable = ({ data }: { data: any[] }) => {
+  if (!data || data.length === 0) return null
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>{data[0]?.[0]}</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {/* {data?.data?.data.map((group) => (
+          <TableRow key={group.id}>
+            <TableCell>
+              <Typography className="font-medium">{group.name}</Typography>
+            </TableCell>
+            <TableCell>{group.numOfAudience}</TableCell>
+            <TableCell>
+              <Typography color="secondary" level="body4">
+                {dayjs(group.createdAt).format("DD/MM/YYYY")}
+              </Typography>
+            </TableCell>
+          </TableRow>
+        ))} */}
+      </TableBody>
+    </Table>
   )
 }

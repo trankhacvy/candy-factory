@@ -1,14 +1,9 @@
 import useSWR from "swr"
-import supabase from "@/lib/supabase"
+import { useSession } from "next-auth/react"
+import api from "@/lib/api"
 
 export function useFetchNFTs() {
-  return useSWR("useFetchNFTs", async () => {
-    try {
-      const { data, error } = await supabase.from("nfts").select("*").order("created_at", { ascending: false })
-      if (error) throw error
-      return data
-    } catch (error) {
-      return []
-    }
-  })
+  const { data: session } = useSession()
+
+  return useSWR(session ? "get-nfts" : null, () => api.withToken(session?.accessToken).getNFTs())
 }

@@ -8,5 +8,13 @@ const WalletMultiButtonDynamic = dynamic(
 )
 
 export default function ConnectWalletButton() {
-  return <WalletMultiButtonDynamic className={cn(buttonVariants())} />
+  return (
+    <WalletMultiButtonDynamic
+      className={cn(
+        buttonVariants({
+          fullWidth: true,
+        })
+      )}
+    />
+  )
 }

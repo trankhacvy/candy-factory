@@ -3,51 +3,40 @@ import {
   Controller,
   DefaultValuePipe,
   Delete,
-  FileTypeValidator,
   Get,
   HttpCode,
   HttpStatus,
-  MaxFileSizeValidator,
   Param,
-  ParseFilePipe,
-  ParseFilePipeBuilder,
   ParseIntPipe,
   Patch,
   Post,
   Query,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { NFTsService } from './nfts.service';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/roles/roles.decorator';
-import { RoleEnum } from 'src/roles/roles.enum';
+import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/roles/roles.guard';
 import { CreateNFTDto } from './dto/create-nft.dto';
 import { NFT } from './entities/nft.entity';
 import { InfinityPaginationResultType } from 'src/utils/types/infinity-pagination-result.type';
 import { infinityPagination } from 'src/utils/infinity-pagination';
 import { UpdateNFTDto } from './dto/update-nft.dto';
-import { NullableType } from 'src/utils/types/nullable.type';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-  FilesInterceptor,
-} from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { AuthUser } from 'src/utils/decorators/auth-user.decorator';
+import { User } from 'src/users/entities/user.entity';
+import { TransformInterceptor } from 'src/utils/interceptors/response-transform.interceptor';
 
-// @ApiBearerAuth()
-// @Roles(RoleEnum.admin)
-// @UseGuards(AuthGuard('jwt'), RolesGuard)
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @ApiTags('NFTs')
 @Controller({
   path: 'nfts',
   version: '1',
 })
 export class NFTsController {
-  constructor(private readonly audiencesService: NFTsService) {}
+  constructor(private readonly nftService: NFTsService) {}
 
   @Post()
   @ApiConsumes('multipart/form-data')
@@ -59,6 +48,7 @@ export class NFTsController {
   )
   @HttpCode(HttpStatus.CREATED)
   create(
+    @AuthUser() user: User,
     @Body() dto: CreateNFTDto,
     @UploadedFiles()
     files: {
@@ -66,46 +56,64 @@ export class NFTsController {
       collectionImage?: Express.Multer.File[];
     },
   ): Promise<NFT> {
-    return this.audiencesService.create({
+    return this.nftService.create({
       ...dto,
       ...files,
+      userId: user.id,
     });
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   update(@Param('id') id: number, @Body() dto: UpdateNFTDto): Promise<NFT> {
-    return this.audiencesService.update(id, dto);
+    return this.nftService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: number): Promise<void> {
-    return this.audiencesService.softDelete(id);
+    return this.nftService.softDelete(id);
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+  })
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @AuthUser() user: User,
   ): Promise<InfinityPaginationResultType<NFT>> {
     if (limit > 50) {
       limit = 50;
     }
 
     return infinityPagination(
-      await this.audiencesService.findManyWithPagination({
-        page,
-        limit,
-      }),
+      await this.nftService.findManyWithPagination(
+        {
+          page,
+          limit,
+        },
+        {
+          userId: user.id,
+        },
+      ),
       { page, limit },
     );
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  findOne(@Param('id') id: string): Promise<NullableType<NFT>> {
-    return this.audiencesService.findOne({ id: +id });
+  @UseInterceptors(TransformInterceptor)
+  findOne(@Param('id') id: string): Promise<NFT> {
+    return this.nftService.findOne({ id: +id });
   }
 }

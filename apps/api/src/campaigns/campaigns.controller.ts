@@ -15,20 +15,18 @@ import {
 } from '@nestjs/common';
 import { CampaignsService } from './campaigns.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/roles/roles.decorator';
-import { RoleEnum } from 'src/roles/roles.enum';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/roles/roles.guard';
 import { CreateCampaignDto } from './dto/create-campaigns.dto';
 import { Campaign } from './entities/campaigns.entity';
 import { InfinityPaginationResultType } from 'src/utils/types/infinity-pagination-result.type';
 import { infinityPagination } from 'src/utils/infinity-pagination';
 import { UpdateCampaignsDto } from './dto/update-campaigns.dto';
-import { NullableType } from 'src/utils/types/nullable.type';
+import { AuthUser } from 'src/utils/decorators/auth-user.decorator';
+import { User } from 'src/users/entities/user.entity';
+import { CampaignTransaction } from './entities/campaign-transactions.entity';
 
-// @ApiBearerAuth()
-// @Roles(RoleEnum.admin)
-// @UseGuards(AuthGuard('jwt'), RolesGuard)
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @ApiTags('Campaigns')
 @Controller({
   path: 'campaigns',
@@ -39,8 +37,11 @@ export class CampaignsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: CreateCampaignDto): Promise<Campaign> {
-    return this.audiencesService.create(dto);
+  create(
+    @Body() dto: CreateCampaignDto,
+    @AuthUser() user: User,
+  ): Promise<Campaign> {
+    return this.audiencesService.create(dto, user);
   }
 
   @Patch(':id')
@@ -63,23 +64,35 @@ export class CampaignsController {
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @AuthUser() user: User,
   ): Promise<InfinityPaginationResultType<Campaign>> {
     if (limit > 50) {
       limit = 50;
     }
 
     return infinityPagination(
-      await this.audiencesService.findManyWithPagination({
-        page,
-        limit,
-      }),
+      await this.audiencesService.findManyWithPagination(
+        {
+          page,
+          limit,
+        },
+        {
+          userId: user.id,
+        },
+      ),
       { page, limit },
     );
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  findOne(@Param('id') id: string): Promise<NullableType<Campaign>> {
+  findOne(@Param('id') id: string): Promise<Campaign> {
     return this.audiencesService.findOne({ id: +id });
+  }
+
+  @Get(':id/transactions')
+  @HttpCode(HttpStatus.OK)
+  findTransactions(@Param('id') id: string): Promise<CampaignTransaction[]> {
+    return this.audiencesService.findTransactions(Number(id));
   }
 }

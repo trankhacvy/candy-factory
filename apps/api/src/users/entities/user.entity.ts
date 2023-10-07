@@ -1,23 +1,23 @@
 import {
   Column,
-  AfterLoad,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   Index,
-  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  BeforeInsert,
-  BeforeUpdate,
 } from 'typeorm';
-import { Role } from '../../roles/entities/role.entity';
-import { Status } from '../../statuses/entities/status.entity';
-import { FileEntity } from '../../files/entities/file.entity';
-import bcrypt from 'bcryptjs';
 import { EntityHelper } from 'src/utils/entity-helper';
-import { AuthProvidersEnum } from 'src/auth/auth-providers.enum';
-import { Exclude, Expose } from 'class-transformer';
+import { Expose } from 'class-transformer';
+import { NFT } from 'src/nfts/entities/nft.entity';
+import { AudienceGroup } from 'src/audience-groups/entities/audience-group.entity';
+import { Campaign } from 'src/campaigns/entities/campaigns.entity';
+
+export enum UserStatus {
+  ACTIVE = 1,
+  INACTIVE = 2,
+}
 
 @Entity()
 export class User extends EntityHelper {
@@ -28,37 +28,7 @@ export class User extends EntityHelper {
   // More info: https://github.com/typeorm/typeorm/issues/2567
   @Column({ type: String, unique: true, nullable: true })
   @Expose({ groups: ['me', 'admin'] })
-  email: string | null;
-
-  @Column({ nullable: true })
-  @Exclude({ toPlainOnly: true })
-  password: string;
-
-  @Exclude({ toPlainOnly: true })
-  public previousPassword: string;
-
-  @AfterLoad()
-  public loadPreviousPassword(): void {
-    this.previousPassword = this.password;
-  }
-
-  @BeforeInsert()
-  @BeforeUpdate()
-  async setPassword() {
-    if (this.previousPassword !== this.password && this.password) {
-      const salt = await bcrypt.genSalt();
-      this.password = await bcrypt.hash(this.password, salt);
-    }
-  }
-
-  @Column({ default: AuthProvidersEnum.email })
-  @Expose({ groups: ['me', 'admin'] })
-  provider: string;
-
-  @Index()
-  @Column({ type: String, nullable: true })
-  @Expose({ groups: ['me', 'admin'] })
-  socialId: string | null;
+  wallet: string | null;
 
   @Index()
   @Column({ type: String, nullable: true })
@@ -68,25 +38,21 @@ export class User extends EntityHelper {
   @Column({ type: String, nullable: true })
   lastName: string | null;
 
-  @ManyToOne(() => FileEntity, {
-    eager: true,
+  @Column({
+    type: 'enum',
+    enum: UserStatus,
+    default: UserStatus.ACTIVE,
   })
-  photo?: FileEntity | null;
+  status: UserStatus;
 
-  @ManyToOne(() => Role, {
-    eager: true,
-  })
-  role?: Role | null;
+  @OneToMany(() => NFT, (nft) => nft.user)
+  nfts?: NFT[];
 
-  @ManyToOne(() => Status, {
-    eager: true,
-  })
-  status?: Status;
+  @OneToMany(() => AudienceGroup, (group) => group.user)
+  groups?: AudienceGroup[];
 
-  @Column({ type: String, nullable: true })
-  @Index()
-  @Exclude({ toPlainOnly: true })
-  hash: string | null;
+  @OneToMany(() => Campaign, (campaign) => campaign.user)
+  campaigns?: Campaign[];
 
   @CreateDateColumn()
   createdAt: Date;

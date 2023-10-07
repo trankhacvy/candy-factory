@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsOptional, MaxLength } from 'class-validator';
+import { User } from 'src/users/entities/user.entity';
 
 export class CreateNFTDto {
   @ApiProperty({ example: 'My awesome NFT' })
@@ -70,4 +71,6 @@ export class CreateNFTDto {
   @IsOptional()
   @ApiProperty({ example: 'http://google.com', nullable: true })
   collectionExternalUrl?: string;
+
+  userId: User['id'];
 }

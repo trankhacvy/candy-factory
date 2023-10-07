@@ -3,19 +3,19 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { PromisePool } from '@supercharge/promise-pool';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { Campaign } from './entities/campaigns.entity';
-import {
-  CreateCampaignDto,
-  CreateCampaignTxDto,
-} from './dto/create-campaigns.dto';
+import { CreateCampaignDto } from './dto/create-campaigns.dto';
 import { IPaginationOptions } from 'src/utils/types/pagination-options';
 import { EntityCondition } from 'src/utils/types/entity-condition.type';
 import { NFTsService } from 'src/nfts/nfts.service';
 import { AudienceGroupsService } from 'src/audience-groups/audience-groups.service';
-import { CampaignTransaction } from './entities/campaign-transactions.entity';
-import { AudiencesService } from 'src/audiences/audiences.service';
+import {
+  CampaignTransaction,
+  CampaignTxStatus,
+} from './entities/campaign-transactions.entity';
 import { MintNFTService } from 'src/shared/services/nft-mint-service';
 import { ConnectionService } from 'src/shared/services/connection-service';
 import { PublicKey } from '@solana/web3.js';
@@ -25,6 +25,7 @@ import {
   TokenStandard,
 } from '@metaplex-foundation/mpl-bubblegum';
 import { CreateMetadataAccountArgsV3 } from '@metaplex-foundation/mpl-token-metadata';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class CampaignsService {
@@ -39,16 +40,36 @@ export class CampaignsService {
     private mintNFTService: MintNFTService,
   ) {}
 
-  async create({ name, nftId, groupId }: CreateCampaignDto): Promise<Campaign> {
+  async create(
+    { name, nftId, groupId }: CreateCampaignDto,
+    user: User,
+  ): Promise<Campaign> {
     const nft = await this.nftsService.findOne({ id: nftId });
     const group = await this.audienceGroupsService.findOne({ id: groupId });
+
+    const audiences = await this.audienceGroupsService.findAudiencesByGroup(
+      group.id,
+    );
 
     const campaign = await this.campaignsRepository.save(
       this.campaignsRepository.create({
         name,
         nft,
         group,
+        user,
+        numOfNft: audiences.length,
+        mintedNft: 0,
       }),
+    );
+
+    await this.campaignTxsRepository.save(
+      this.campaignTxsRepository.create(
+        audiences.map((aud) => ({
+          wallet: aud.wallet,
+          status: CampaignTxStatus.PROCESSING,
+          campaign: campaign,
+        })),
+      ),
     );
 
     this.createBulkCampaignTxs(campaign.id);
@@ -78,10 +99,12 @@ export class CampaignsService {
 
   findManyWithPagination(
     paginationOptions: IPaginationOptions,
+    where?: EntityCondition<Campaign>,
   ): Promise<Campaign[]> {
     return this.campaignsRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      where,
     });
   }
 
@@ -97,23 +120,16 @@ export class CampaignsService {
     return campaign;
   }
 
-  // transactions
-  async createCampaignTx({
-    campaignId,
-    nftAddress,
-    signature,
-    wallet,
-  }: CreateCampaignTxDto): Promise<CampaignTransaction> {
-    const campaign = await this.findOne({ id: campaignId });
+  async findTransactions(id: number): Promise<CampaignTransaction[]> {
+    const campaign = await this.findOne({ id });
 
-    return this.campaignTxsRepository.save(
-      this.campaignTxsRepository.create({
-        nftAddress,
-        signature,
-        wallet,
-        campaign,
-      }),
-    );
+    const transactions = await this.campaignTxsRepository.find({
+      where: {
+        campaignId: campaign.id,
+      },
+    });
+
+    return transactions;
   }
 
   async createBulkCampaignTxs(campaignId: Campaign['id']): Promise<boolean> {
@@ -121,11 +137,9 @@ export class CampaignsService {
     if (!campaign.nft || !campaign.group)
       throw new InternalServerErrorException('Invalid campaign');
 
-    const audiences = await this.audienceGroupsService.findAudiencesByGroup(
-      campaign.group.id,
-    );
+    const transactions = await this.findTransactions(campaign.id);
 
-    console.log('audiences: ', audiences);
+    console.log('transactions: ', transactions.length);
 
     const connection = this.connectionService.getConnection();
     const payer = this.connectionService.feePayer;
@@ -152,65 +166,99 @@ export class CampaignsService {
       collectionDetails: null,
     };
 
-    console.log('collectionMetadata: ', collectionMetadata);
+    // console.log('collectionMetadata: ', collectionMetadata);
 
-    const { mint, metadataAccount, masterEditionAccount } =
-      await this.mintNFTService.mintCollection(collectionMetadata);
+    let mint: PublicKey | null = null;
+    let metadataAccount: PublicKey | null = null;
+    let masterEditionAccount: PublicKey | null = null;
 
-    console.log('mint: ', mint);
-    console.log('metadataAccount: ', metadataAccount);
-    console.log('masterEditionAccount: ', masterEditionAccount);
+    try {
+      let result = await this.mintNFTService.mintCollection(collectionMetadata);
 
-    audiences.forEach(async (audience) => {
-      // mint nft
-      const metadata: MetadataArgs = {
-        name: nft.name,
-        symbol: nft.symbol,
-        uri: nft.metadataUri,
-        // @ts-ignore
-        creators: [
-          {
-            address: payer.publicKey,
-            verified: false,
-            share: 100,
-          },
-        ].filter(Boolean),
-        editionNonce: 0,
-        uses: null,
-        collection: null,
-        primarySaleHappened: false,
-        sellerFeeBasisPoints: 0,
-        isMutable: false,
-        // these values are taken from the Bubblegum package
-        tokenProgramVersion: TokenProgramVersion.Original,
-        tokenStandard: TokenStandard.NonFungible,
-      };
+      mint = result.mint;
+      metadataAccount = result.metadataAccount;
+      masterEditionAccount = result.masterEditionAccount;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
 
-      console.log('metadata: ', metadata);
+    if (!mint || !metadataAccount || !masterEditionAccount) return false;
 
-      const signature = await this.mintNFTService.mintCompressedNFT(
-        connection,
-        payer,
-        tree,
-        new PublicKey(mint),
-        new PublicKey(metadataAccount),
-        new PublicKey(masterEditionAccount),
-        metadata,
-        new PublicKey(audience.wallet),
-      );
+    // console.log('mint: ', mint);
+    // console.log('metadataAccount: ', metadataAccount);
+    // console.log('masterEditionAccount: ', masterEditionAccount);
 
-      console.log('signature: ', signature);
+    await PromisePool.for(transactions)
+      .withConcurrency(5)
+      .process(async (tx) => {
+        try {
+          // mint nft
+          const metadata: MetadataArgs = {
+            name: nft.name,
+            symbol: nft.symbol,
+            uri: nft.metadataUri,
+            // @ts-ignore
+            creators: [
+              {
+                address: payer.publicKey,
+                verified: false,
+                share: 100,
+              },
+            ].filter(Boolean),
+            editionNonce: 0,
+            uses: null,
+            collection: null,
+            primarySaleHappened: false,
+            sellerFeeBasisPoints: 0,
+            isMutable: false,
+            // these values are taken from the Bubblegum package
+            tokenProgramVersion: TokenProgramVersion.Original,
+            tokenStandard: TokenStandard.NonFungible,
+          };
 
-      // insert to db
-      await this.campaignTxsRepository.save(
-        this.campaignTxsRepository.create({
-          nftAddress: '',
-          signature,
-          wallet: audience.wallet,
-          campaign,
-        }),
-      );
-    });
+          // console.log('metadata: ', metadata);
+
+          const signature = await this.mintNFTService.mintCompressedNFT(
+            connection,
+            payer,
+            tree,
+            new PublicKey(mint!),
+            new PublicKey(metadataAccount!),
+            new PublicKey(masterEditionAccount!),
+            metadata,
+            new PublicKey(tx.wallet),
+          );
+
+          console.log('signature: ', signature);
+
+          // update to db
+
+          Promise.all([
+            this.campaignTxsRepository.save(
+              this.campaignTxsRepository.create({
+                id: tx.id,
+                nftAddress: '',
+                signature,
+                status: CampaignTxStatus.SUCCESS,
+                campaign,
+              }),
+            ),
+            this.campaignsRepository.increment(
+              { id: campaign.id },
+              'mintedNft',
+              1,
+            ),
+          ]);
+        } catch (error: any) {
+          return this.campaignTxsRepository.save(
+            this.campaignTxsRepository.create({
+              id: tx.id,
+              status: CampaignTxStatus.FAILED,
+            }),
+          );
+        }
+      });
 
     return true;
   }
