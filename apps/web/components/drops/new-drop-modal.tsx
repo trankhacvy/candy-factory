@@ -62,7 +62,7 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
     try {
       console.log(values)
 
-      const { success, error } = await createDrop(values)
+      const { success, data, error } = await createDrop(values)
 
       if (success) {
         toast({
@@ -70,7 +70,8 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
           title: "New drop created successfully",
         })
         await mutate("fetch-drops")
-        push(`/dashboard`)
+        setIsOpen(false)
+        push(`/dashboard/${data?.id}`)
       } else {
         toast({
           variant: "error",

@@ -7,14 +7,17 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { SigninMessage } from "@/lib/signin-message"
 import { useEffect } from "react"
 import ConnectWalletButton from "@/components/connect-wallet-button"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function LoginButton() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const params = useSearchParams()
+  const { replace } = useRouter()
 
   const wallet = useWallet()
   const walletModal = useWalletModal()
+
+  console.log("wallet", wallet.connected, status)
 
   const handleSignIn = async () => {
     try {
@@ -50,7 +53,7 @@ export default function LoginButton() {
     if (wallet.connected && status === "unauthenticated") {
       handleSignIn()
     }
-  }, [wallet.connected])
+  }, [wallet.connected, replace])
 
   return <ConnectWalletButton />
 }

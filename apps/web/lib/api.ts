@@ -1,9 +1,10 @@
-import { AudienceGroup, Campaign, CampaignTransaction, CreateCampaignDto, NFT } from "@/types/schema"
+import { Audience, AudienceGroup, CreateDropDto, Drop, DropTransaction, NFT } from "@/types/schema"
 import qs from "query-string"
 import fetcher from "./fetcher"
-import { BaseListResponse, BaseResponse, PaginationRequest } from "@/types"
+import { BaseListResponse, BaseListResponseV2, BaseResponse, PageOptionRequest, PaginationRequest } from "@/types"
+import { BACKEND_API_URL } from "@/config/env"
 
-const BASE_URL = "http://localhost:8080/api/v1"
+const BASE_URL = BACKEND_API_URL
 
 class Api {
   headers: HeadersInit = {
@@ -19,21 +20,45 @@ class Api {
     return this
   }
 
+  public login(wallet: string) {
+    return fetcher(`${BASE_URL}/auth/wallet/login`, {
+      headers: this.headers,
+      method: "POST",
+      body: JSON.stringify({ wallet }),
+    })
+  }
+
+  // user
+  public getCurrentUser() {
+    return fetcher<BaseResponse<Drop>>(`${BASE_URL}/auth/me`, {
+      headers: this.headers,
+    })
+  }
+
   // drops
-  public getDrops(request: PaginationRequest = { page: 1, limit: 10 }) {
-    return fetcher<BaseResponse<BaseListResponse<Campaign>>>(`${BASE_URL}/campaigns?${qs.stringify(request)}`, {
+  public getDrops(request?: PageOptionRequest) {
+    return fetcher<BaseResponse<BaseListResponseV2<Drop>>>(`${BASE_URL}/drops?${qs.stringify(request ?? {})}`, {
       headers: this.headers,
     })
   }
 
-  public getDropTransactions(dropId: string) {
-    return fetcher<BaseResponse<CampaignTransaction[]>>(`${BASE_URL}/campaigns/${dropId}/transactions`, {
+  public getDrop(dropId: string) {
+    return fetcher<BaseResponse<Drop>>(`${BASE_URL}/drops/${dropId}`, {
       headers: this.headers,
     })
   }
 
-  public createDrop(requestBody: CreateCampaignDto) {
-    return fetcher<BaseResponse<Campaign>>(`${BASE_URL}/campaigns`, {
+  public getDropTransactions(dropId: string, request?: PageOptionRequest) {
+    return fetcher<BaseResponse<BaseListResponseV2<DropTransaction>>>(
+      `${BASE_URL}/drops/${dropId}/transactions?${qs.stringify(request ?? {})}`,
+      {
+        headers: this.headers,
+      }
+    )
+  }
+
+  public createDrop(requestBody: CreateDropDto) {
+    return fetcher<BaseResponse<Drop>>(`${BASE_URL}/drops`, {
       headers: this.headers,
       method: "POST",
       body: JSON.stringify(requestBody),
@@ -75,6 +100,21 @@ class Api {
   public getContactGroup(request: PaginationRequest = { page: 1, limit: 10 }) {
     return fetcher<BaseResponse<BaseListResponse<AudienceGroup>>>(
       `${BASE_URL}/audience-groups?${qs.stringify(request)}`,
+      {
+        headers: this.headers,
+      }
+    )
+  }
+
+  public getGroup(groupId: string) {
+    return fetcher<BaseResponse<AudienceGroup>>(`${BASE_URL}/audience-groups/${groupId}`, {
+      headers: this.headers,
+    })
+  }
+
+  public getWallets(groupId: string, request?: PageOptionRequest) {
+    return fetcher<BaseResponse<BaseListResponseV2<Audience>>>(
+      `${BASE_URL}/audience-groups/${groupId}/wallets?${qs.stringify(request ?? {})}`,
       {
         headers: this.headers,
       }

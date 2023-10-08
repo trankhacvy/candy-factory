@@ -21,7 +21,7 @@ export class TransformInterceptor<T>
     const req = context.switchToHttp().getRequest();
 
     if (excludePaths.includes(req.url)) return next.handle();
-
+    console.log('check');
     return next.handle().pipe(
       map((data) => {
         const statusCode = context.switchToHttp().getResponse().statusCode;

@@ -1,77 +1,130 @@
 "use client"
 
-import dayjs from "dayjs"
-import { useParams } from "next/navigation"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useFetchCampaignTxs } from "@/hooks/use-fetch-campaign-txs"
+import { DataTable } from "../ui/data-table/data-table"
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  PaginationState,
+  VisibilityState,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table"
+import { Drop, DropTransaction } from "@/types/schema"
+import { useMemo, useState } from "react"
+import { DataTableToolbar } from "../ui/data-table/table-toolbar"
+import { useFetchDropTxs } from "@/hooks/use-fetch-drop-txs"
 import truncate from "@/utils/truncate"
+import { getExplorerUrl } from "@/utils/explorer"
 import { Badge } from "../ui/badge"
-import { Skeleton } from "../ui/skeleton"
-import { Typography } from "../ui/typography"
+import { useSession } from "next-auth/react"
 
-export function DropTransactions() {
-  const params = useParams()
+export function DropTransactions({ drop }: { drop?: Drop }) {
+  const { data: session } = useSession()
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
-  const { data, isLoading } = useFetchCampaignTxs(params?.campaignId as string)
+  const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 20,
+  })
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-4 overflow-hidden rounded-2xl p-5 shadow-card">
-        <div className="grid grid-cols-3 gap-8">
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-        </div>
-        <div className="grid grid-cols-3 gap-8">
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-        </div>
-        <div className="grid grid-cols-3 gap-8">
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-        </div>
-      </div>
-    )
-  }
+  const pageRequest = useMemo(
+    () => ({
+      page: pageIndex + 1,
+      take: pageSize,
+    }),
+    [pageIndex, pageSize]
+  )
+
+  console.log("check refresh", drop && drop.mintedNft < drop.numOfNft)
+
+  const { data: transactionsData, isLoading: isTxLoading } = useFetchDropTxs(
+    String(drop?.id),
+    pageRequest,
+    drop && drop.mintedNft < drop.numOfNft
+  )
+
+  const transactions = transactionsData?.data?.data ?? []
+
+  console.log({ pageIndex, pageSize, len: transactions.length })
+
+  const pagination = useMemo(
+    () => ({
+      pageIndex,
+      pageSize,
+    }),
+    [pageIndex, pageSize]
+  )
+
+  const columns: ColumnDef<DropTransaction>[] = [
+    {
+      accessorKey: "wallet",
+      header: "Wallet",
+      cell: ({ row }) => {
+        return (
+          <a target="_blank" href={getExplorerUrl(row.getValue("wallet"), "address")}>
+            {truncate(row.getValue("wallet") ?? "", 12, true)}
+          </a>
+        )
+      },
+    },
+    {
+      accessorKey: "nftAddress",
+      header: "NFT",
+      cell: ({ row }) => {
+        return (
+          <a target="_blank" href={getExplorerUrl(row.getValue("nftAddress"), "address", true)}>
+            {truncate(row.getValue("nftAddress") ?? "", 12, true)}
+          </a>
+        )
+      },
+    },
+    {
+      accessorKey: "signature",
+      header: "Signature",
+      cell: ({ row }) => {
+        return (
+          <a target="_blank" href={getExplorerUrl(row.getValue("signature"), "signature")}>
+            {truncate(row.getValue("signature") ?? "", 20, true)}
+          </a>
+        )
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.getValue("status")
+        return <Badge variant={status === 1 ? "info" : "success"}>{status == 1 ? "Processing" : "Success"}</Badge>
+      },
+    },
+  ]
+
+  const table = useReactTable({
+    data: transactions,
+    pageCount: transactionsData?.data?.meta.pageCount ?? -1,
+    columns,
+    state: {
+      columnFilters,
+      columnVisibility,
+      pagination,
+    },
+    getCoreRowModel: getCoreRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
+    manualPagination: true,
+    debugTable: true,
+  })
 
   return (
     <div className="overflow-hidden rounded-2xl shadow-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Wallet</TableHead>
-            <TableHead>NFT</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="w-32">Create at</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data?.data?.map((tx) => (
-            <TableRow key={tx.id}>
-              <TableCell>{truncate(tx.wallet ?? "", 24, false)}</TableCell>
-              <TableCell>
-                <a
-                  href={`https://translator.shyft.to/address/${tx.signature}?cluster=devnet&compressed=true`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {truncate(tx.nftAddress ?? "", 24, false)}
-                </a>
-              </TableCell>
-              <TableCell>
-                <Badge variant="success">{tx.status}</Badge>
-              </TableCell>
-              <TableCell>
-                <Typography color="secondary" level="body4">
-                  {dayjs(tx.createdAt).format("DD/MM/YYYY")}
-                </Typography>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <DataTable
+        loading={isTxLoading || !session}
+        table={table}
+        columns={columns.length}
+        toolbar={<DataTableToolbar table={table} />}
+      />
     </div>
   )
 }

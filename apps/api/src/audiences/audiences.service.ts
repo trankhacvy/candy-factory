@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial, Like, Repository } from 'typeorm';
 import { Audience } from './entities/audience.entity';
 import { CreateAudienceDto } from './dto/create-audience.dto';
 import { IPaginationOptions } from 'src/utils/types/pagination-options';
@@ -8,6 +8,9 @@ import { EntityCondition } from 'src/utils/types/entity-condition.type';
 import { NullableType } from 'src/utils/types/nullable.type';
 import { AudienceGroupsService } from 'src/audience-groups/audience-groups.service';
 import { AudienceGroup } from 'src/audience-groups/entities/audience-group.entity';
+import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
+import { PageMetaDto } from 'src/utils/dtos/page-meta.dto';
+import { PageDto } from 'src/utils/dtos/page.dto';
 
 @Injectable()
 export class AudiencesService {
@@ -80,5 +83,28 @@ export class AudiencesService {
         groupId: id,
       },
     });
+  }
+
+  async findByGroupIdPagination(
+    id: AudienceGroup['id'],
+    dto: PageOptionsDto,
+  ): Promise<PageDto<Audience>> {
+    const [result, total] = await this.audiencesRepository.findAndCount({
+      // @ts-ignore
+      where: {
+        wallet: Like('%' + dto.q?.toLowerCase() ?? '' + '%'),
+        groupId: id,
+      },
+      order: { createdAt: dto.order },
+      take: dto.take,
+      skip: dto.skip,
+    });
+
+    const pageMetaDto = new PageMetaDto({
+      itemCount: total,
+      pageOptionsDto: dto,
+    });
+
+    return new PageDto(result, pageMetaDto);
   }
 }

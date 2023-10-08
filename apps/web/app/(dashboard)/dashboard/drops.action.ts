@@ -4,10 +4,10 @@ import { ServerActionResponse } from "@/types"
 import { formDropSchema } from "@/components/drops/new-drop-modal"
 import api from "@/lib/api"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { Campaign } from "@/types/schema"
+import { authOptions } from "@/lib/auth"
+import { Drop } from "@/types/schema"
 
-export const createDrop = async (values: z.infer<typeof formDropSchema>): Promise<ServerActionResponse<Campaign>> => {
+export const createDrop = async (values: z.infer<typeof formDropSchema>): Promise<ServerActionResponse<Drop>> => {
   try {
     const session = await getServerSession(authOptions)
 

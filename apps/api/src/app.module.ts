@@ -26,8 +26,7 @@ import { SessionModule } from './session/session.module';
 import { AudiencesModule } from './audiences/audiences.module';
 import { AudienceGroupsModule } from './audience-groups/audience-groups.module';
 import { NFTsModule } from './nfts/nfts.module';
-import { CampaignsModule } from './campaigns/campaigns.module';
-import { CampaignTxSubscriber } from './subscriber/campaign-tx-subscriber';
+import { DropsModule } from './drops/drops.module';
 import { SharedModule } from './shared/shared.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformInterceptor } from './utils/interceptors/response-transform.interceptor';
@@ -69,11 +68,10 @@ import { TransformInterceptor } from './utils/interceptors/response-transform.in
     AudiencesModule,
     AudienceGroupsModule,
     NFTsModule,
-    CampaignsModule,
+    DropsModule,
     SharedModule,
   ],
   providers: [
-    CampaignTxSubscriber,
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor,

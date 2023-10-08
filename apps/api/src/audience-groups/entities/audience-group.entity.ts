@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { EntityHelper } from 'src/utils/entity-helper';
 import { Audience } from 'src/audiences/entities/audience.entity';
-import { Campaign } from 'src/campaigns/entities/campaigns.entity';
+import { Drop } from 'src/drops/entities/drop.entity';
 import { User } from 'src/users/entities/user.entity';
 
 @Entity()
@@ -34,8 +34,8 @@ export class AudienceGroup extends EntityHelper {
   @OneToMany(() => Audience, (entity) => entity.group)
   members: Audience[];
 
-  @OneToOne(() => Campaign, (campaign) => campaign.group)
-  campaign?: Campaign;
+  @OneToMany(() => Drop, (drop) => drop.group)
+  drops?: Drop[];
 
   @ManyToOne(() => User, (user) => user.groups, {
     onDelete: 'CASCADE',

@@ -1,72 +1,90 @@
 "use client"
 
 import dayjs from "dayjs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useFetchNFTs } from "@/hooks/use-fetch-nfts"
-import Image from "../ui/image"
-import { Skeleton } from "../ui/skeleton"
+import { useState } from "react"
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  getCoreRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table"
+import Image from "@/components/ui/image"
+import { NFT } from "@/types/schema"
+import { DataTableRowActions } from "../ui/data-table/row-action"
+import { DataTable } from "../ui/data-table/data-table"
+import { DataTableToolbar } from "../ui/data-table/table-toolbar"
 import { Typography } from "../ui/typography"
+import Link from "next/link"
 
 export function NFTTable() {
   const { data, isLoading } = useFetchNFTs()
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-4 overflow-hidden rounded-2xl p-5 shadow-card">
-        <div className="grid grid-cols-3 gap-8">
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-        </div>
-        <div className="grid grid-cols-3 gap-8">
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-        </div>
-        <div className="grid grid-cols-3 gap-8">
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-          <Skeleton className="h-5 w-full rounded-lg" />
-        </div>
-      </div>
-    )
-  }
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+  const columns: ColumnDef<NFT>[] = [
+    {
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ row }) => {
+        const nft = row.original
+        return (
+          <div className="flex items-center gap-4">
+            <Image
+              className="rounded-lg w-12 h-12 overflow-hidden"
+              src={nft.image ?? ""}
+              alt={nft.name ?? ""}
+              width={48}
+              height={48}
+            />
+            <Link className="hover:underline cursor-pointer" href="">
+              <Typography level="body4" className="font-semibold">
+                {nft.name}
+              </Typography>
+            </Link>
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: "collectionName",
+      header: "Collection",
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Created at",
+      cell: ({ row }) => {
+        return <>{dayjs(row.getValue("createdAt")).format("DD/MM/YYYY")}</>
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        return <DataTableRowActions row={row} />
+      },
+    },
+  ]
+
+  const table = useReactTable({
+    data: data?.data?.data ?? [],
+    columns,
+    state: {
+      columnFilters,
+    },
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+  })
 
   return (
     <div className="overflow-hidden rounded-2xl shadow-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>NFT</TableHead>
-            <TableHead>Collection</TableHead>
-            <TableHead className="w-32">Create at</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data?.data?.data?.map((nft) => (
-            <TableRow key={nft.id}>
-              <TableCell>
-                <div className="flex items-center gap-4">
-                  <Image
-                    className="rounded-lg w-12 h-12 overflow-hidden"
-                    src={nft.image ?? ""}
-                    alt={nft.name ?? ""}
-                    width={48}
-                    height={48}
-                  />
-                  <Typography className="font-medium">{nft.name}</Typography>
-                </div>
-              </TableCell>
-              <TableCell>{nft.collectionName}</TableCell>
-              <TableCell>
-                <Typography color="secondary" level="body4">
-                  {dayjs(nft.createdAt).format("DD/MM/YYYY")}
-                </Typography>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <DataTable
+        loading={isLoading}
+        table={table}
+        columns={columns.length}
+        toolbar={<DataTableToolbar table={table} />}
+      />
     </div>
   )
 }

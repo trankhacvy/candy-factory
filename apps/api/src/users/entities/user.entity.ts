@@ -12,7 +12,7 @@ import { EntityHelper } from 'src/utils/entity-helper';
 import { Expose } from 'class-transformer';
 import { NFT } from 'src/nfts/entities/nft.entity';
 import { AudienceGroup } from 'src/audience-groups/entities/audience-group.entity';
-import { Campaign } from 'src/campaigns/entities/campaigns.entity';
+import { Drop } from 'src/drops/entities/drop.entity';
 
 export enum UserStatus {
   ACTIVE = 1,
@@ -51,8 +51,8 @@ export class User extends EntityHelper {
   @OneToMany(() => AudienceGroup, (group) => group.user)
   groups?: AudienceGroup[];
 
-  @OneToMany(() => Campaign, (campaign) => campaign.user)
-  campaigns?: Campaign[];
+  @OneToMany(() => Drop, (drop) => drop.user)
+  drops?: Drop[];
 
   @CreateDateColumn()
   createdAt: Date;

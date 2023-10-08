@@ -5,13 +5,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { EntityHelper } from 'src/utils/entity-helper';
 import { IsOptional, MaxLength } from 'class-validator';
-import { Campaign } from 'src/campaigns/entities/campaigns.entity';
+import { Drop } from 'src/drops/entities/drop.entity';
 import { User } from 'src/users/entities/user.entity';
 
 @Entity()
@@ -79,8 +80,8 @@ export class NFT extends EntityHelper {
   @Column({ type: String, nullable: true })
   collectionExternalUrl?: string;
 
-  @OneToOne(() => Campaign, (campaign) => campaign.nft)
-  campaign?: Campaign;
+  @OneToMany(() => Drop, (drop) => drop.nft)
+  drops?: Drop[];
 
   @ManyToOne(() => User, (user) => user.nfts, {
     onDelete: 'CASCADE',

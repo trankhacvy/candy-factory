@@ -22,6 +22,8 @@ import { sampleWallets } from 'src/utils/wallet';
 import { getCsvFileFromFileName } from 'src/utils/csv-helper';
 import { ICsvRecord } from 'src/utils/types/csv-record.type';
 import { isPublicKey } from 'src/utils/validators/is-public-key';
+import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
+import { PageDto } from 'src/utils/dtos/page.dto';
 
 @Injectable()
 export class AudienceGroupsService {
@@ -37,7 +39,11 @@ export class AudienceGroupsService {
     user: User,
   ): Promise<AudienceGroup> {
     const group = await this.audienceGroupsRepository.save(
-      this.audienceGroupsRepository.create({ ...dto, user }),
+      this.audienceGroupsRepository.create({
+        ...dto,
+        numOfAudience: dto.audiences.length,
+        user,
+      }),
     );
 
     await this.audiencesService.bulkCreate(
@@ -94,7 +100,11 @@ export class AudienceGroupsService {
     user: User,
   ): Promise<AudienceGroup> {
     const group = await this.audienceGroupsRepository.save(
-      this.audienceGroupsRepository.create({ ...dto, user }),
+      this.audienceGroupsRepository.create({
+        ...dto,
+        numOfAudience: sampleWallets.addresses.length,
+        user,
+      }),
     );
 
     await this.audiencesService.bulkCreate(
@@ -163,5 +173,9 @@ export class AudienceGroupsService {
 
   async findAudiencesByGroup(id: AudienceGroup['id']): Promise<Audience[]> {
     return this.audiencesService.findByGroupId(id);
+  }
+
+  async findAudiencesByGroupPagination(id: AudienceGroup['id'], dto: PageOptionsDto): Promise<PageDto<Audience>> {
+    return this.audiencesService.findByGroupIdPagination(id, dto);
   }
 }

@@ -16,3 +16,6 @@ export const SUPABASE_API_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 // keys
 export const MASTER_TREE = process.env.MASTER_TREE!
+
+// api
+export const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API!

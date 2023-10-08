@@ -35,7 +35,7 @@ export interface User {
   status: 1 | 2
   nfts?: NFT[]
   groups?: AudienceGroup[]
-  campaigns?: Campaign[]
+  drops?: Drop[]
   /** @format date-time */
   createdAt: string
   /** @format date-time */
@@ -50,7 +50,7 @@ export interface AudienceGroup {
   numOfAudience: number
   isFavorite: boolean
   members: Audience[]
-  campaign?: Campaign
+  drops?: Drop[]
   user: User
   userId: number
   /** @format date-time */
@@ -61,14 +61,14 @@ export interface AudienceGroup {
   deletedAt: string
 }
 
-export interface CampaignTransaction {
+export interface DropTransaction {
   id: number
   nftAddress?: string
   signature?: string
   wallet: string
   status: 1 | 2 | 3
-  campaign: Campaign
-  campaignId: number
+  drop: Drop
+  dropId: number
   /** @format date-time */
   createdAt: string
   /** @format date-time */
@@ -77,13 +77,15 @@ export interface CampaignTransaction {
   deletedAt: string
 }
 
-export interface Campaign {
+export interface Drop {
   id: number
   name: string
   status: 1 | 2
-  nft?: NFT
-  group?: AudienceGroup
-  transactions: CampaignTransaction[]
+  nft: NFT
+  nftId: number
+  group: AudienceGroup
+  groupId: number
+  transactions: DropTransaction[]
   user: User
   userId: number
   numOfNft: number
@@ -118,7 +120,7 @@ export interface NFT {
   collectionImage?: string
   collectionMetadataUri?: string
   collectionExternalUrl?: string
-  campaign?: Campaign
+  drops?: Drop[]
   user: User
   userId: number
   /** @format date-time */
@@ -135,9 +137,7 @@ export interface AuthEmailLoginDto {
 }
 
 export interface CreateAudienceDto {
-  /** @example "0x00" */
   wallet: string
-  /** @example "1" */
   groupId: number
 }
 
@@ -146,17 +146,14 @@ export interface UpdateAudienceDto {
   wallet?: string
 }
 
-export interface CreateAudience {
-  /** @example "0x123" */
+export interface CreateAudienceWithoutGroupDto {
   wallet: string
 }
 
 export interface CreateAudienceGroupDto {
-  /** @example "Vip members" */
   name: string
-  /** @example "true" */
   isFavorite?: boolean
-  audiences: CreateAudience[]
+  audiences: CreateAudienceWithoutGroupDto[]
 }
 
 export interface CreateAudienceGroupWithCsvDto {
@@ -275,7 +272,7 @@ export interface UpdateNFTDto {
   attributes?: string[]
 }
 
-export interface CreateCampaignDto {
+export interface CreateDropDto {
   /** @example "New Action" */
   name: string
   /** @example 1 */
@@ -284,8 +281,7 @@ export interface CreateCampaignDto {
   groupId: number
 }
 
-export interface UpdateCampaignsDto {
-  /** @example "My awesome Campaign" */
+export interface UpdateDropDto {
+  /** @example "My awesome drop" */
   name?: string
 }
-

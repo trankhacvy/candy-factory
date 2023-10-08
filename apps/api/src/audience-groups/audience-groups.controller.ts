@@ -41,6 +41,7 @@ import { AuthUser } from 'src/utils/decorators/auth-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { Audience } from 'src/audiences/entities/audience.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
@@ -151,9 +152,25 @@ export class AudienceGroupsController {
     return this.audiencesService.findOne({ id: +id });
   }
 
-  @Get(':id/audiences')
+  @Get(':groupId/wallets')
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+  })
   @HttpCode(HttpStatus.OK)
-  findAudiences(@Param('id') id: string): Promise<NullableType<Audience[]>> {
-    return this.audiencesService.findAudiencesByGroup(Number(id));
+  async findWallets(
+    @Param('groupId') groupId: string,
+    @Query() dto: PageOptionsDto,
+  ) {
+    return this.audiencesService.findAudiencesByGroupPagination(
+      Number(groupId),
+      dto,
+    );
   }
 }

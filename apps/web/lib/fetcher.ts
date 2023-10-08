@@ -13,7 +13,10 @@ export class FetcherError extends Error {
 
 export default async function fetcher<JSON = any>(input: RequestInfo, init?: RequestInit): Promise<JSON> {
   try {
-    const res = await fetch(input, init)
+    const res = await fetch(input, {
+      ...init,
+      cache: "no-store",
+    })
     if (res.ok) {
       return (await res.json()) as JSON
     }
