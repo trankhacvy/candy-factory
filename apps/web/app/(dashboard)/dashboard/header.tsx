@@ -9,7 +9,9 @@ import { Separator } from "@/components/ui/separator"
 import { Typography } from "@/components/ui/typography"
 import { cn } from "@/utils/cn"
 import { DashboardNavMobile } from "./nav"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
+import { useWallet } from "@solana/wallet-adapter-react"
+import api from "@/lib/api"
 
 export default function DashboardHeader() {
   const [small, setSmall] = useState(false)
@@ -51,6 +53,8 @@ export default function DashboardHeader() {
 }
 
 function AdminUserMenu() {
+  const { data: session } = useSession()
+  const { disconnect } = useWallet()
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -71,7 +75,9 @@ function AdminUserMenu() {
         <div className="p-2">
           <li className="cursor-pointer list-none rounded-md px-2 py-1.5 hover:bg-gray-500/8">
             <Typography
-              onClick={() => {
+              onClick={async () => {
+                disconnect()
+                api.withToken(session?.accessToken).logout()
                 signOut({
                   callbackUrl: "/login",
                 })

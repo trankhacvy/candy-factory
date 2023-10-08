@@ -2,9 +2,9 @@ import type { SiteConfig } from "@/types"
 
 export const siteConfig: SiteConfig = {
   name: "Candy Factory",
-  description: "The most powerful set of NFT distribution tools to build and scale your NFT airdrops.",
-  url: "https://solana-starter.com",
-  ogImage: "https://solana-starter.com/og.jpg",
+  description: "The easiest way to airdrop cNFTs at scale",
+  url: "https://candy-factory-opos.vercel.app/",
+  ogImage: "https://candy-factory-opos.vercel.app/og.jpg",
   links: {
     twitter: "",
     github: "",

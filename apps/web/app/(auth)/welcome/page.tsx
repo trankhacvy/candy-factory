@@ -1,23 +1,45 @@
+"use client"
+
 import Image from "next/image"
-import { siteConfig } from "@/config/site"
-import MyText from "./text"
+import { Typography } from "@/components/ui/typography"
+import { WelcomeHeader } from "@/components/landing/welcome-header"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useEffect, useRef } from "react"
+import api from "@/lib/api"
 
-export default function WelcomePage() {
+const WelcomePage = () => {
+  const { data: session, update } = useSession()
+  const { replace } = useRouter()
+  const setting = useRef(false)
+
+  useEffect(() => {
+    if (session && !session.user.init && !setting.current) {
+      console.log("setuppppp")
+      setting.current = true
+      api
+        .withToken(session.accessToken)
+        .initUser()
+        .then(async () => {
+          await update({ init: true })
+          replace("/dashboard")
+        })
+    }
+  }, [session])
+
   return (
-    <div className="p-6 sm:mx-auto sm:w-full sm:max-w-md sm:rounded-2xl sm:shadow-card">
-      <Image
-        alt={siteConfig.name}
-        width={100}
-        height={100}
-        className="relative mx-auto h-12 w-auto dark:scale-110 dark:rounded-full dark:border dark:border-stone-400"
-        src="/assets/logo.png"
-      />
-      <h1 className="font-cal mt-6 text-center text-3xl dark:text-white">{siteConfig.name}</h1>
-      <p className="mt-2 text-center text-sm text-stone-600 dark:text-stone-400">{siteConfig.description}</p>
-
-      <div className="mt-4">
-        <MyText />
+    <div className="bg-blur-image">
+      <WelcomeHeader />
+      <div className="flex min-h-screen items-center justify-center px-4 py-24 md:px-0">
+        <div className="w-full flex flex-col items-center max-w-md rounded-2xl bg-white px-6 py-10 shadow-card">
+          <Image src="/assets/wait.png" alt="wait" width={180} height={180} />
+          <Typography as="h6" className="mt-6 font-semibold text-center">
+            Please wait while we set up your account.
+          </Typography>
+        </div>
       </div>
     </div>
   )
 }
+
+export default WelcomePage

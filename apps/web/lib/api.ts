@@ -28,6 +28,13 @@ class Api {
     })
   }
 
+  public logout() {
+    return fetcher(`${BASE_URL}/auth/logout`, {
+      headers: this.headers,
+      method: "POST",
+    })
+  }
+
   public initUser() {
     return fetcher(`${BASE_URL}/auth/init`, {
       headers: this.headers,

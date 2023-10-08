@@ -1,30 +1,26 @@
-import Image from "next/image"
-import { Suspense } from "react"
+"use client"
+
+import { Typography } from "@/components/ui/typography"
 import { siteConfig } from "@/config/site"
+import { WelcomeHeader } from "@/components/landing/welcome-header"
 import LoginButton from "./login-button"
 
-export default function LoginPage() {
+const LoginPage = () => {
   return (
-    <div className="p-6 sm:mx-auto sm:w-full sm:max-w-md sm:rounded-2xl sm:shadow-card">
-      <Image
-        alt={siteConfig.name}
-        width={100}
-        height={100}
-        className="relative mx-auto h-12 w-auto dark:scale-110 dark:rounded-full dark:border dark:border-stone-400"
-        src="/assets/logo.png"
-      />
-      <h1 className="font-cal mt-6 text-center text-3xl dark:text-white">{siteConfig.name}</h1>
-      <p className="mt-2 text-center text-sm text-stone-600 dark:text-stone-400">{siteConfig.description}</p>
-
-      <div className="mt-4">
-        <Suspense
-          fallback={
-            <div className="my-2 h-10 w-full rounded-md border border-stone-200 bg-stone-100 dark:border-stone-700 dark:bg-stone-800" />
-          }
-        >
+    <div className="bg-blur-image">
+      <WelcomeHeader />
+      <div className="flex min-h-screen items-center justify-center px-4 py-24 md:px-0">
+        <div className="w-full max-w-md rounded-2xl bg-white px-6 py-10 shadow-card">
+          <div className="mb-10">
+            <Typography as="h4" level="body1" className="font-bold">
+              Sign in to {siteConfig.name}
+            </Typography>
+          </div>
           <LoginButton />
-        </Suspense>
+        </div>
       </div>
     </div>
   )
 }
+
+export default LoginPage

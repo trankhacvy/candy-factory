@@ -8,6 +8,8 @@ import { SigninMessage } from "@/lib/signin-message"
 import { useEffect } from "react"
 import ConnectWalletButton from "@/components/connect-wallet-button"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function LoginButton() {
   const { status } = useSession()
@@ -16,8 +18,6 @@ export default function LoginButton() {
 
   const wallet = useWallet()
   const walletModal = useWalletModal()
-
-  console.log("wallet", wallet.connected, status)
 
   const handleSignIn = async () => {
     try {
@@ -55,5 +55,21 @@ export default function LoginButton() {
     }
   }, [wallet.connected, replace])
 
-  return <ConnectWalletButton />
+  if (!wallet.connected) {
+    return <ConnectWalletButton />
+  }
+
+  if (status === "unauthenticated" || status === "loading") {
+    return (
+      <Button fullWidth onClick={handleSignIn}>
+        Join now
+      </Button>
+    )
+  }
+
+  return (
+    <Button fullWidth as={Link} href="/dashboard">
+      Dashboard
+    </Button>
+  )
 }

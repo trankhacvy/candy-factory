@@ -7,8 +7,6 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 import { PropsWithChildren } from "react"
-import { Button } from "../ui/button"
-import Link from "next/link"
 
 const Container = ({ children }: PropsWithChildren) => {
   return <div className="max-w-7xl mx-auto px-6 md:px-12 xl:px-6">{children}</div>
@@ -63,11 +61,6 @@ export const AppHeader = () => {
                         dark:shadow-none dark:bg-gray-800 dark:border-gray-700"
             >
               <div className="mt-12 flex gap-4 lg:mt-0">
-                {connected && status === "authenticated" && (
-                  <Button as={Link} href="/dashboard">
-                    Dashboard
-                  </Button>
-                )}
                 <LoginButton />
               </div>
             </div>
