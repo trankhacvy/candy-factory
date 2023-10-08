@@ -7,6 +7,8 @@
     "web:dev": "turbo dev --no-cache  --continue --filter=web",
     "web:build": "turbo build --no-cache  --continue --filter=web",
     "api:dev": "turbo dev --no-cache  --continue --filter=api",
+    "api:build": "turbo build --no-cache  --continue --filter=api",
+    "api:start": "turbo start:prod --filter=api",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo lint",
     "test": "turbo test",

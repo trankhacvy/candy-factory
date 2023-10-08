@@ -27,6 +27,11 @@
       "cache": false,
       "persistent": true
     },
+    "start:prod": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
     "clean": {
       "cache": false
     }
