@@ -64,7 +64,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    jwt: async ({ token, user, trigger }) => {
+    jwt: async ({ token, user, trigger, session }) => {
       //   console.log("[jwt] token", token)
       //   console.log("[jwt] user", user)
 
@@ -73,7 +73,15 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (trigger === "update") {
+        console.log("handle update: ", session)
+        if (typeof session.init === "boolean" && !!token.user) {
+          token.user.init = session.init
+        }
+
         // handle update
+        // console.log("[jwt] token", token)
+        // console.log("[jwt] user", user)
+        // console.log("[jwt] session", session)
       }
 
       return token

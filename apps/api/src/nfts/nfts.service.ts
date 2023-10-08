@@ -11,6 +11,8 @@ import { IPaginationOptions } from 'src/utils/types/pagination-options';
 import { EntityCondition } from 'src/utils/types/entity-condition.type';
 import { StorageService } from 'src/shared/services/storage-service';
 import { ConnectionService } from 'src/shared/services/connection-service';
+import { User } from 'src/users/entities/user.entity';
+import { initNFT } from 'src/utils/wallet';
 
 @Injectable()
 export class NFTsService {
@@ -86,6 +88,15 @@ export class NFTsService {
         metadataUri: uploadNftMetadataResult.url,
         collectionImage: uploadCollectionImageResult.url,
         collectionMetadataUri: uploadCollectionMetadataResult.url,
+      }),
+    );
+  }
+
+  async initUserNFT(user: User) {
+    return this.nftsRepository.save(
+      this.nftsRepository.create({
+        ...initNFT,
+        userId: user.id,
       }),
     );
   }

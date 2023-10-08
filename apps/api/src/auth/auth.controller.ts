@@ -28,6 +28,7 @@ import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
 import { LoginResponseType } from './types/login-response.type';
 import { User } from '../users/entities/user.entity';
 import { NullableType } from '../utils/types/nullable.type';
+import { AuthUser } from 'src/utils/decorators/auth-user.decorator';
 
 @ApiTags('Auth')
 @Controller({
@@ -159,5 +160,16 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   public async delete(@Request() request): Promise<void> {
     return this.service.softDelete(request.user);
+  }
+
+  @ApiBearerAuth()
+  @SerializeOptions({
+    groups: ['me'],
+  })
+  @Post('init')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('jwt'))
+  public async initUser(@AuthUser() user): Promise<void> {
+    await this.service.initUser(user);
   }
 }

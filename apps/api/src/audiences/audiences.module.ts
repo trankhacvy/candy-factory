@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AudiencesService } from './audiences.service';
 import { AudiencesController } from './audiences.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +8,11 @@ import { IsNotExist } from 'src/utils/validators/is-not-exists.validator';
 import { AudienceGroupsModule } from 'src/audience-groups/audience-groups.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Audience]), AudienceGroupsModule],
+  imports: [
+    TypeOrmModule.forFeature([Audience]),
+    //  AudienceGroupsModule,
+    forwardRef(() => AudienceGroupsModule),
+  ],
   controllers: [AudiencesController],
   providers: [IsExist, IsNotExist, AudiencesService],
   exports: [AudiencesService],

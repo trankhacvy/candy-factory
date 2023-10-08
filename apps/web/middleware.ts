@@ -1,4 +1,5 @@
 import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
 
 type JwtObject = {
   id: number
@@ -9,7 +10,12 @@ type JwtObject = {
 
 export default withAuth(
   // `withAuth` augments your `Request` with the user's token.
-  function middleware(req) {},
+  function middleware(req) {
+    const token = req.nextauth.token
+    if (token && !token.user.init) {
+      return NextResponse.redirect(new URL("/welcome", req.url))
+    }
+  },
   {
     callbacks: {
       authorized: async ({ token }) => {

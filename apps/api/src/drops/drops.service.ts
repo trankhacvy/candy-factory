@@ -153,9 +153,9 @@ export class DropsService {
       id: drop.nftId,
     });
 
-    const group = await this.audienceGroupsService.findOne({
-      id: drop.groupId,
-    });
+    // const group = await this.audienceGroupsService.findOne({
+    //   id: drop.groupId,
+    // });
 
     const transactions = await this.findTransactions(drop.id);
 
@@ -187,14 +187,14 @@ export class DropsService {
 
     // console.log('collectionMetadata: ', collectionMetadata);
 
-    let mint: PublicKey | null = null;
+    let collectionMint: PublicKey | null = null;
     let metadataAccount: PublicKey | null = null;
     let masterEditionAccount: PublicKey | null = null;
 
     try {
       let result = await this.mintNFTService.mintCollection(collectionMetadata);
 
-      mint = result.mint;
+      collectionMint = result.mint;
       metadataAccount = result.metadataAccount;
       masterEditionAccount = result.masterEditionAccount;
     } catch (error) {
@@ -202,7 +202,8 @@ export class DropsService {
       throw error;
     }
 
-    if (!mint || !metadataAccount || !masterEditionAccount) return false;
+    if (!collectionMint || !metadataAccount || !masterEditionAccount)
+      return false;
 
     console.log('Mint collection success');
 
@@ -245,7 +246,7 @@ export class DropsService {
               connection,
               payer,
               tree,
-              new PublicKey(mint!),
+              new PublicKey(collectionMint!),
               new PublicKey(metadataAccount!),
               new PublicKey(masterEditionAccount!),
               metadata,

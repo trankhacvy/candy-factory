@@ -17,6 +17,7 @@ export class AudiencesService {
   constructor(
     @InjectRepository(Audience)
     private audiencesRepository: Repository<Audience>,
+    @Inject(forwardRef(() => AudienceGroupsService))
     private audienceGroupsService: AudienceGroupsService,
   ) {}
 

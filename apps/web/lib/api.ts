@@ -28,6 +28,13 @@ class Api {
     })
   }
 
+  public initUser() {
+    return fetcher(`${BASE_URL}/auth/init`, {
+      headers: this.headers,
+      method: "POST",
+    })
+  }
+
   // user
   public getCurrentUser() {
     return fetcher<BaseResponse<Drop>>(`${BASE_URL}/auth/me`, {

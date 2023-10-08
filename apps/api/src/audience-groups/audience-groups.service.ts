@@ -18,7 +18,7 @@ import { EntityCondition } from 'src/utils/types/entity-condition.type';
 import { AudiencesService } from 'src/audiences/audiences.service';
 import { Audience } from 'src/audiences/entities/audience.entity';
 import { User } from 'src/users/entities/user.entity';
-import { sampleWallets } from 'src/utils/wallet';
+import { initGroups, sampleWallets } from 'src/utils/wallet';
 import { getCsvFileFromFileName } from 'src/utils/csv-helper';
 import { ICsvRecord } from 'src/utils/types/csv-record.type';
 import { isPublicKey } from 'src/utils/validators/is-public-key';
@@ -117,6 +117,26 @@ export class AudienceGroupsService {
     return group;
   }
 
+  async initGroupsWallet(user: User): Promise<void> {
+    for (const item of initGroups) {
+      const group = await this.audienceGroupsRepository.save(
+        this.audienceGroupsRepository.create({
+          name: item.name,
+          isFavorite: true,
+          numOfAudience: item.addresses.length,
+          user,
+        }),
+      );
+
+      await this.audiencesService.bulkCreate(
+        item.addresses.map((wallet) => ({
+          wallet,
+          groupId: group.id,
+        })),
+      );
+    }
+  }
+
   async update(
     id: AudienceGroup['id'],
     payload: DeepPartial<AudienceGroup>,
@@ -175,7 +195,10 @@ export class AudienceGroupsService {
     return this.audiencesService.findByGroupId(id);
   }
 
-  async findAudiencesByGroupPagination(id: AudienceGroup['id'], dto: PageOptionsDto): Promise<PageDto<Audience>> {
+  async findAudiencesByGroupPagination(
+    id: AudienceGroup['id'],
+    dto: PageOptionsDto,
+  ): Promise<PageDto<Audience>> {
     return this.audiencesService.findByGroupIdPagination(id, dto);
   }
 }

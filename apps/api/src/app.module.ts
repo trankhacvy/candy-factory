@@ -57,7 +57,6 @@ import { TransformInterceptor } from './utils/interceptors/response-transform.in
     }),
     UsersModule,
     // FilesModule,
-    AuthModule,
     // AuthFacebookModule,
     // AuthGoogleModule,
     // AuthTwitterModule,
@@ -70,6 +69,7 @@ import { TransformInterceptor } from './utils/interceptors/response-transform.in
     NFTsModule,
     DropsModule,
     SharedModule,
+    AuthModule,
   ],
   providers: [
     {

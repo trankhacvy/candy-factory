@@ -15,6 +15,7 @@ declare module "next-auth" {
       status: number
       createdAt: string
       updatedAt: string
+      init: boolean
     }
   }
 
@@ -41,6 +42,7 @@ declare module "next-auth/jwt" {
       status: number
       createdAt: string
       updatedAt: string
+      init: boolean
     }
   }
 }

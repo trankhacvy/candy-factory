@@ -54,6 +54,9 @@ export class User extends EntityHelper {
   @OneToMany(() => Drop, (drop) => drop.user)
   drops?: Drop[];
 
+  @Column({ type: Boolean, default: false, nullable: true })
+  init: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -1,28 +1,16 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   UnauthorizedException,
+  forwardRef,
 } from '@nestjs/common';
 import ms from 'ms';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/user.entity';
-import bcrypt from 'bcryptjs';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
-import { AuthUpdateDto } from './dto/auth-update.dto';
-import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
-import { RoleEnum } from 'src/roles/roles.enum';
-import { StatusEnum } from 'src/statuses/statuses.enum';
-import crypto from 'crypto';
-import { plainToClass } from 'class-transformer';
-import { Status } from 'src/statuses/entities/status.entity';
-import { Role } from 'src/roles/entities/role.entity';
-import { AuthProvidersEnum } from './auth-providers.enum';
-import { SocialInterface } from 'src/social/interfaces/social.interface';
-import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
 import { UsersService } from 'src/users/users.service';
-import { ForgotService } from 'src/forgot/forgot.service';
-import { MailService } from 'src/mail/mail.service';
 import { NullableType } from '../utils/types/nullable.type';
 import { LoginResponseType } from './types/login-response.type';
 import { ConfigService } from '@nestjs/config';
@@ -31,15 +19,18 @@ import { SessionService } from 'src/session/session.service';
 import { JwtRefreshPayloadType } from './strategies/types/jwt-refresh-payload.type';
 import { Session } from 'src/session/entities/session.entity';
 import { JwtPayloadType } from './strategies/types/jwt-payload.type';
+import { AudienceGroupsService } from 'src/audience-groups/audience-groups.service';
+import { NFTsService } from 'src/nfts/nfts.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
-    // private forgotService: ForgotService,
+    @Inject(forwardRef(() => AudienceGroupsService))
+    private audienceGroupsService: AudienceGroupsService,
+    private nftService: NFTsService,
     private sessionService: SessionService,
-    // private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
   ) {}
 
@@ -67,6 +58,7 @@ export class AuthService {
     const { token, refreshToken, tokenExpires } = await this.getTokensData({
       id: user.id,
       sessionId: session.id,
+      init: user.init,
     });
 
     return {
@@ -95,9 +87,10 @@ export class AuthService {
     const { token, refreshToken, tokenExpires } = await this.getTokensData({
       id: user.id,
       sessionId: session.id,
+      init: user.init,
     });
 
-    console.log({ token });
+    // console.log({ token });
 
     return {
       refreshToken,
@@ -387,6 +380,7 @@ export class AuthService {
     const { token, refreshToken, tokenExpires } = await this.getTokensData({
       id: session.user.id,
       sessionId: session.id,
+      init: session.user.init,
     });
 
     return {
@@ -409,6 +403,7 @@ export class AuthService {
   private async getTokensData(data: {
     id: User['id'];
     sessionId: Session['id'];
+    init: boolean;
   }) {
     const tokenExpiresIn = this.configService.getOrThrow('auth.expires', {
       infer: true,
@@ -421,6 +416,7 @@ export class AuthService {
         {
           id: data.id,
           sessionId: data.sessionId,
+          init: data.init,
         },
         {
           secret: this.configService.getOrThrow('auth.secret', { infer: true }),
@@ -447,5 +443,11 @@ export class AuthService {
       refreshToken,
       tokenExpires,
     };
+  }
+
+  async initUser(user: User): Promise<void> {
+    await this.audienceGroupsService.initGroupsWallet(user);
+    await this.nftService.initUserNFT(user);
+    await this.usersService.update(user.id, { init: true });
   }
 }
