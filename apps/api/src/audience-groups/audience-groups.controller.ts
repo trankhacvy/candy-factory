@@ -39,7 +39,6 @@ import { UpdateAudienceGroupDto } from './dto/update-group.dto';
 import { NullableType } from 'src/utils/types/nullable.type';
 import { AuthUser } from 'src/utils/decorators/auth-user.decorator';
 import { User } from 'src/users/entities/user.entity';
-import { Audience } from 'src/audiences/entities/audience.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 

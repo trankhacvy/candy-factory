@@ -10,7 +10,6 @@ import { AudienceGroupsModule } from 'src/audience-groups/audience-groups.module
 @Module({
   imports: [
     TypeOrmModule.forFeature([Audience]),
-    //  AudienceGroupsModule,
     forwardRef(() => AudienceGroupsModule),
   ],
   controllers: [AudiencesController],

@@ -15,10 +15,7 @@ import {
 } from '@nestjs/common';
 import { AudiencesService } from './audiences.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/roles/roles.decorator';
-import { RoleEnum } from 'src/roles/roles.enum';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/roles/roles.guard';
 import { CreateAudienceDto } from './dto/create-audience.dto';
 import { Audience } from './entities/audience.entity';
 import { InfinityPaginationResultType } from 'src/utils/types/infinity-pagination-result.type';
@@ -26,9 +23,8 @@ import { infinityPagination } from 'src/utils/infinity-pagination';
 import { UpdateAudienceDto } from './dto/update-audience.dto';
 import { NullableType } from 'src/utils/types/nullable.type';
 
-// @ApiBearerAuth()
-// @Roles(RoleEnum.admin)
-// @UseGuards(AuthGuard('jwt'), RolesGuard)
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @ApiTags('Audiences')
 @Controller({
   path: 'audiences',
