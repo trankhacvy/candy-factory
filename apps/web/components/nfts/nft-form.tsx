@@ -1,12 +1,10 @@
 "use client"
-
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { PlusIcon, TrashIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useFieldArray, useForm } from "react-hook-form"
 import * as z from "zod"
-import { createNFT } from "@/app/(dashboard)/dashboard/nfts/nfts.action"
 import ConnectWalletButton from "@/components/connect-wallet-button"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Button } from "@/components/ui/button"
@@ -159,7 +157,7 @@ export function NewNFTForm() {
   }
 
   return (
-    <div className="mmax-w-xl mx-auto">
+    <div className="mx-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="mb-6 flex gap-6">
@@ -451,7 +449,7 @@ export function NewNFTForm() {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          {/* <div className="flex justify-end">
             {connected ? (
               <Button loading={form.formState.isSubmitting} type="submit">
                 Create
@@ -459,7 +457,7 @@ export function NewNFTForm() {
             ) : (
               <ConnectWalletButton />
             )}
-          </div>
+          </div> */}
         </form>
       </Form>
     </div>

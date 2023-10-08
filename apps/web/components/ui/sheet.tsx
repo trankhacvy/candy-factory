@@ -23,7 +23,9 @@ const portalVariants = tv({
 
 interface SheetPortalProps extends SheetPrimitive.DialogPortalProps, VariantProps<typeof portalVariants> {}
 
+// @ts-ignore
 const SheetPortal = ({ position, className, children, ...props }: SheetPortalProps) => (
+  // @ts-ignore
   <SheetPrimitive.Portal className={cn(className)} {...props}>
     <div className={portalVariants({ position })}>{children}</div>
   </SheetPrimitive.Portal>
