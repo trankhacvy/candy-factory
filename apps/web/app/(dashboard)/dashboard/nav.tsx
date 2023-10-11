@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, DropletIcon, Edit3, Globe, ImageIcon, LayoutDashboard, Settings, WalletIcon } from "lucide-react"
+import { DropletIcon, HammerIcon, ImageIcon, Settings, WalletIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams, useSelectedLayoutSegments } from "next/navigation"
@@ -33,6 +33,12 @@ export default function Nav() {
         href: "/dashboard/nfts",
         isActive: segments[0] === "nfts",
         icon: <ImageIcon width={18} />,
+      },
+      {
+        name: "Settings",
+        href: "/dashboard/settings",
+        isActive: segments[0] === "settings",
+        icon: <HammerIcon width={18} />,
       },
       {
         name: "Signup Form",

@@ -4,7 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  FindOptionsOrder,
+  ILike,
+  Like,
+  Raw,
+  Repository,
+} from 'typeorm';
 import { NFT } from './entities/nft.entity';
 import { CreateNFTDto } from './dto/create-nft.dto';
 import { IPaginationOptions } from 'src/utils/types/pagination-options';
@@ -13,6 +20,9 @@ import { StorageService } from 'src/shared/services/storage-service';
 import { ConnectionService } from 'src/shared/services/connection-service';
 import { User } from 'src/users/entities/user.entity';
 import { initNFT } from 'src/utils/wallet';
+import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
+import { PageMetaDto } from 'src/utils/dtos/page-meta.dto';
+import { PageDto } from 'src/utils/dtos/page.dto';
 
 @Injectable()
 export class NFTsService {
@@ -118,15 +128,40 @@ export class NFTsService {
     await this.nftsRepository.softDelete(id);
   }
 
-  findManyWithPagination(
-    paginationOptions: IPaginationOptions,
+  async findManyWithPagination(
+    dto: PageOptionsDto,
     where?: EntityCondition<NFT>,
-  ): Promise<NFT[]> {
-    return this.nftsRepository.find({
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
-      where,
+    order: FindOptionsOrder<NFT> = { createdAt: dto.order },
+  ): Promise<PageDto<NFT>> {
+    const [result, total] = await this.nftsRepository.findAndCount({
+      where: [
+        {
+          name: Raw((alias) => `LOWER(${alias}) LIKE LOWER(:name)`, {
+            name: `%${dto.q}%`,
+          }),
+          ...where,
+        },
+        {
+          description: Raw(
+            (alias) => `LOWER(${alias}) LIKE LOWER(:description)`,
+            {
+              description: `%${dto.q}%`,
+            },
+          ),
+          ...where,
+        },
+      ],
+      order,
+      take: dto.take,
+      skip: dto.skip,
     });
+
+    const pageMetaDto = new PageMetaDto({
+      itemCount: total,
+      pageOptionsDto: dto,
+    });
+
+    return new PageDto(result, pageMetaDto);
   }
 
   async findOne(fields: EntityCondition<NFT>): Promise<NFT> {

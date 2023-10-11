@@ -38,6 +38,17 @@ export type SolanaConfig = {
   masterTree?: string;
   // storage
   bundlr?: string;
+  // storage
+  shyftApikey?: string;
+  // pricing
+  nftPrice: number
+};
+
+export type RedisConfig = {
+  host?: string;
+  username?: string;
+  password?: string;
+  port?: number;
 };
 
 export type AllConfigType = {
@@ -45,4 +56,5 @@ export type AllConfigType = {
   auth: AuthConfig;
   database: DatabaseConfig;
   solana: SolanaConfig;
+  redis: RedisConfig;
 };

@@ -5,7 +5,7 @@ import databaseConfig from './config/database.config';
 import authConfig from './config/auth.config';
 import appConfig from './config/app.config';
 import solanaConfig from './config/solana.config';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { HomeModule } from './home/home.module';
@@ -18,12 +18,15 @@ import { DropsModule } from './drops/drops.module';
 import { SharedModule } from './shared/shared.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformInterceptor } from './utils/interceptors/response-transform.interceptor';
+import { BullModule } from '@nestjs/bull';
+import { AllConfigType } from './config/config.type';
+import redisConfig from './config/redis.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, authConfig, appConfig, solanaConfig],
+      load: [databaseConfig, authConfig, appConfig, solanaConfig, redisConfig],
       envFilePath: ['.env'],
     }),
     TypeOrmModule.forRootAsync({
@@ -41,6 +44,28 @@ import { TransformInterceptor } from './utils/interceptors/response-transform.in
     DropsModule,
     SharedModule,
     AuthModule,
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService<AllConfigType>) => {
+        return {
+          redis: {
+            host: configService.get('redis.host', {
+              infer: true,
+            }),
+            username: configService.get('redis.username', {
+              infer: true,
+            }),
+            password: configService.get('redis.password', {
+              infer: true,
+            }),
+            port: configService.get('redis.port', {
+              infer: true,
+            }),
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
   ],
   providers: [
     {

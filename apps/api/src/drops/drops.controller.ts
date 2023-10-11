@@ -21,6 +21,7 @@ import { AuthUser } from 'src/utils/decorators/auth-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 import { PageDto } from 'src/utils/dtos/page.dto';
+import { TransactionsPageOptionsDto } from './dto/transaction-page-option.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
@@ -36,6 +37,11 @@ export class DropsController {
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateDropDto, @AuthUser() user: User): Promise<Drop> {
     return this.dropsService.create(dto, user);
+  }
+
+  @Post('/get-price')
+  getPrice(@Body() dto: CreateDropDto): Promise<number> {
+    return this.dropsService.getDropPrice(dto);
   }
 
   @Patch(':id')
@@ -56,7 +62,7 @@ export class DropsController {
     @Query() dto: PageOptionsDto,
     @AuthUser() user: User,
   ): Promise<PageDto<Drop>> {
-    return this.dropsService.findAll(dto, user);
+    return this.dropsService.findAll(dto, { userId: user.id });
   }
 
   @Get(':id')
@@ -66,21 +72,14 @@ export class DropsController {
   }
 
   @Get(':id/transactions')
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-  })
   @HttpCode(HttpStatus.OK)
   async findTransactions(
     @Param('id') dropId: string,
-    @Query() dto: PageOptionsDto,
+    @Query() dto: TransactionsPageOptionsDto,
   ) {
-    return this.dropsService.findAllTransactions(dto, dropId);
+    return this.dropsService.findTransactionsManyWithPagination(dto, {
+      dropId: Number(dropId),
+      ...(dto.status ? { status: dto.status } : {}),
+    });
   }
 }

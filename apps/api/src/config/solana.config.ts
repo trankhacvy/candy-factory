@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { SolanaConfig } from './config.type';
-import { IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 import validateConfig from 'src/utils/validate-config';
 
 class EnvironmentVariablesValidator {
@@ -18,6 +18,12 @@ class EnvironmentVariablesValidator {
 
   @IsString()
   BUNDLR_URL: string;
+
+  @IsString()
+  SHYFT_API_KEY: string;
+
+  @IsNumber()
+  NFT_PRICE: number;
 }
 
 export default registerAs<SolanaConfig>('solana', () => {
@@ -31,5 +37,11 @@ export default registerAs<SolanaConfig>('solana', () => {
     masterTree: process.env.MASTER_TREE,
     // storage
     bundlr: process.env.BUNDLR_URL,
+    // shyft
+    shyftApikey: process.env.SHYFT_API_KEY,
+    // pricing
+    nftPrice: process.env.NFT_PRICE
+      ? parseFloat(process.env.NFT_PRICE)
+      : 0.0001,
   };
 });

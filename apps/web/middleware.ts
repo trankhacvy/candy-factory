@@ -1,5 +1,7 @@
 import { withAuth } from "next-auth/middleware"
+import { signOut } from "next-auth/react"
 import { NextResponse } from "next/server"
+import api from "./lib/api"
 
 type JwtObject = {
   id: number

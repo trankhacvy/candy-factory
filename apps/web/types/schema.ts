@@ -36,6 +36,7 @@ export interface User {
   nfts?: NFT[]
   groups?: AudienceGroup[]
   drops?: Drop[]
+  init: boolean
   /** @format date-time */
   createdAt: string
   /** @format date-time */
@@ -131,11 +132,6 @@ export interface NFT {
   deletedAt: string
 }
 
-export interface AuthEmailLoginDto {
-  /** @example "63EEC9FfGyksm7PkVC6z8uAmqozbQcTzbkWJNsgqjkFs" */
-  wallet: string
-}
-
 export interface CreateAudienceDto {
   wallet: string
   groupId: number
@@ -163,6 +159,12 @@ export interface CreateAudienceGroupWithCsvDto {
   isFavorite?: boolean
   /** @format binary */
   file: File
+}
+
+export interface CreateAudienceGroupWithCollectionDto {
+  name: string
+  isFavorite?: boolean
+  collection: string
 }
 
 export interface UpdateAudienceGroupDto {
@@ -284,4 +286,9 @@ export interface CreateDropDto {
 export interface UpdateDropDto {
   /** @example "My awesome drop" */
   name?: string
+}
+
+export interface AuthEmailLoginDto {
+  /** @example "63EEC9FfGyksm7PkVC6z8uAmqozbQcTzbkWJNsgqjkFs" */
+  wallet: string
 }

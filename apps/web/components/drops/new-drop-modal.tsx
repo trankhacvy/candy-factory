@@ -4,8 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { XIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useEffect, useState } from "react"
+import { useForm, useFormContext } from "react-hook-form"
 import * as z from "zod"
 import {
   AlertDialog,
@@ -28,6 +28,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { useFetchContactGroups } from "@/hooks/use-fetch-contact-groups"
 import { createDrop } from "@/app/(dashboard)/dashboard/drops.action"
 import { mutate } from "swr"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
+import { TopCollections } from "@/utils/top-collections"
+import { AspectRatio } from "../ui/aspect-ratio"
+import { cn } from "@/utils/cn"
 
 type NewDropModalProps = {
   trigger: React.ReactNode
@@ -35,11 +39,27 @@ type NewDropModalProps = {
   onOpenChange?: (open: boolean) => void
 }
 
-export const formDropSchema = z.object({
+const typeEnum = z.enum(["group", "collection"])
+
+export const baseFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   nftId: z.string().min(1, { message: "NFT is required" }),
+  type: typeEnum,
+})
+
+const fromGroupFormSchema = z.object({
+  type: z.literal(typeEnum.enum.group),
   groupId: z.string().min(1, { message: "Group is required" }),
 })
+
+const fromCollectionFormSchema = z.object({
+  type: z.literal(typeEnum.enum.collection),
+  collection: z.string().min(1, { message: "Collection is required" }),
+})
+
+const walletsFormSchema = z.discriminatedUnion("type", [fromGroupFormSchema, fromCollectionFormSchema])
+
+const dropFormSchema = z.intersection(walletsFormSchema, baseFormSchema)
 
 export const NewDropModal = ({ trigger }: NewDropModalProps) => {
   const { toast } = useToast()
@@ -49,16 +69,18 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
   const { push } = useRouter()
 
   const { data: nfts } = useFetchNFTs()
-  const { data: audienceGroups } = useFetchContactGroups()
 
-  const form = useForm<z.infer<typeof formDropSchema>>({
-    resolver: zodResolver(formDropSchema),
+  const [tab, setTab] = useState<"group" | "collection">("group")
+
+  const form = useForm<z.infer<typeof dropFormSchema>>({
+    resolver: zodResolver(dropFormSchema),
     defaultValues: {
       name: "",
+      type: "group",
     },
   })
 
-  const onSubmit = async (values: z.infer<typeof formDropSchema>) => {
+  const onSubmit = async (values: z.infer<typeof dropFormSchema>) => {
     try {
       console.log(values)
 
@@ -87,17 +109,21 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
     }
   }
 
+  useEffect(() => {
+    form.setValue("type", tab)
+  }, [tab, form])
+
   return (
     <>
       <AlertDialog open={open} onOpenChange={setIsOpen}>
         <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
-        <AlertDialogContent className="max-h-[calc(100vh-80px)] max-w-md overflow-auto">
+        <AlertDialogContent className="max-h-[calc(100vh-80px)] max-w-lg overflow-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>New Drop</AlertDialogTitle>
           </AlertDialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
                 control={form.control}
                 name="name"
@@ -116,7 +142,7 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
                 control={form.control}
                 name="nftId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="mt-5">
                     <FormLabel>NFT</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
@@ -146,32 +172,9 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="groupId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Group</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select the Group" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {audienceGroups?.data?.data?.map((group) => (
-                          <SelectItem key={group.id} value={String(group.id)}>
-                            {group.name} - {group.numOfAudience} wallets
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <DropsTab value={tab} onValueChange={setTab} />
 
-              <AlertDialogFooter>
+              <AlertDialogFooter className="mt-10">
                 {publicKey ? (
                   <Button loading={form.formState.isSubmitting} type="submit" fullWidth>
                     Create
@@ -196,5 +199,101 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
         </AlertDialogContent>
       </AlertDialog>
     </>
+  )
+}
+
+const DropsTab = ({ value, onValueChange }: any) => {
+  return (
+    <Tabs value={value} onValueChange={onValueChange} className="w-full mt-5">
+      <TabsList
+        style={{
+          boxShadow: "rgba(145, 158, 171, 0.08) 0px -2px 0px 0px inset",
+        }}
+        className="grid w-full grid-cols-2"
+      >
+        <TabsTrigger value="group">Wallet group</TabsTrigger>
+        <TabsTrigger value="collection">Collection</TabsTrigger>
+      </TabsList>
+      <TabsContent value="group">
+        <GroupTab />
+      </TabsContent>
+      <TabsContent value="collection">
+        <CollectionTab />
+      </TabsContent>
+    </Tabs>
+  )
+}
+
+const GroupTab = () => {
+  const { data: audienceGroups } = useFetchContactGroups()
+
+  const { control } = useFormContext<z.infer<typeof dropFormSchema>>()
+
+  return (
+    <FormField
+      control={control}
+      name="groupId"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Group</FormLabel>
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <FormControl>
+              <SelectTrigger>
+                <SelectValue placeholder="Select the Group" />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {audienceGroups?.data?.data?.map((group) => (
+                <SelectItem key={group.id} value={String(group.id)}>
+                  {group.name} - {group.numOfAudience} wallets
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
+
+const CollectionTab = () => {
+  const { control, setValue, watch } = useFormContext<z.infer<typeof dropFormSchema>>()
+
+  const wCollection = watch("collection")
+
+  return (
+    <FormField
+      control={control}
+      name="collection"
+      render={({ field }) => (
+        <FormItem className="w-full">
+          <FormLabel>Collection</FormLabel>
+          <FormControl>
+            <Input fullWidth placeholder="eg. 0x00" {...field} />
+          </FormControl>
+          <FormMessage />
+          <div className="grid w-full grid-cols-3 gap-4 pt-4">
+            {TopCollections.map((col) => (
+              <button
+                onClick={(event) => {
+                  event.preventDefault()
+                  setValue("collection", col.address)
+                }}
+                key={col.address}
+                className={cn("rounded-2xl relative overflow-hidden p-1.5 border-2", {
+                  "border-black": col.address === wCollection,
+                  "border-gray-500/16": col.address !== wCollection,
+                })}
+              >
+                <AspectRatio>
+                  <Image className="w-full h-auto rounded-xl" src={col.image} alt={col.name} fill />
+                </AspectRatio>
+              </button>
+            ))}
+          </div>
+        </FormItem>
+      )}
+    />
   )
 }

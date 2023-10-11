@@ -19,7 +19,6 @@
   }
 }
 
-
 .wallet-adapter-dropdown {
   width: 100%;
   text-align: center;
@@ -28,7 +27,7 @@
 .wallet-adapter-button {
   width: 100%;
   text-align: center !important;
-  background-color: #212B36;
+  background-color: #212b36;
   color: white;
   border-radius: 8px;
   font-weight: 600;
@@ -36,5 +35,5 @@
 }
 
 .wallet-adapter-button:hover {
-  background-color: #454F5B;
+  background-color: #454f5b;
 }

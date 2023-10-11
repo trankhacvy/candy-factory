@@ -25,3 +25,14 @@ export class CreateAudienceGroupWithCsvDto {
   @ApiProperty({ type: 'string', format: 'binary' })
   file: any;
 }
+
+export class CreateAudienceGroupWithCollectionDto {
+  @IsNotEmpty()
+  name: string;
+
+  @IsOptional()
+  isFavorite?: boolean;
+
+  @IsNotEmpty()
+  collection: string;
+}

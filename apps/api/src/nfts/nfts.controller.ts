@@ -27,6 +27,8 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthUser } from 'src/utils/decorators/auth-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { TransformInterceptor } from 'src/utils/interceptors/response-transform.interceptor';
+import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
+import { PageDto } from 'src/utils/dtos/page.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
@@ -77,37 +79,11 @@ export class NFTsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-  })
   async findAll(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query() dto: PageOptionsDto,
     @AuthUser() user: User,
-  ): Promise<InfinityPaginationResultType<NFT>> {
-    if (limit > 50) {
-      limit = 50;
-    }
-
-    return infinityPagination(
-      await this.nftService.findManyWithPagination(
-        {
-          page,
-          limit,
-        },
-        {
-          userId: user.id,
-        },
-      ),
-      { page, limit },
-    );
+  ): Promise<PageDto<NFT>> {
+    return this.nftService.findManyWithPagination(dto, { userId: user.id });
   }
 
   @Get(':id')

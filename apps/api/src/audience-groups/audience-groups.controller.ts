@@ -30,6 +30,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import {
   CreateAudienceGroupDto,
+  CreateAudienceGroupWithCollectionDto,
   CreateAudienceGroupWithCsvDto,
 } from './dto/create-group.dto';
 import { AudienceGroup } from './entities/audience-group.entity';
@@ -41,6 +42,7 @@ import { AuthUser } from 'src/utils/decorators/auth-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
+import { PageDto } from 'src/utils/dtos/page.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
@@ -86,6 +88,16 @@ export class AudienceGroupsController {
     return this.audiencesService.createWithCsv(dto, file, user);
   }
 
+  @Post('/collection')
+  @ApiOperation({ summary: 'Create group' })
+  @HttpCode(HttpStatus.CREATED)
+  createWithCollection(
+    @AuthUser() user: User,
+    @Body() dto: CreateAudienceGroupWithCollectionDto,
+  ): Promise<AudienceGroup> {
+    return this.audiencesService.createWithCollection(dto, user);
+  }
+
   @Post('/demo')
   @HttpCode(HttpStatus.CREATED)
   createDemo(
@@ -112,37 +124,13 @@ export class AudienceGroupsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-  })
   async findAll(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query() dto: PageOptionsDto,
     @AuthUser() user: User,
-  ): Promise<InfinityPaginationResultType<AudienceGroup>> {
-    if (limit > 50) {
-      limit = 50;
-    }
-
-    return infinityPagination(
-      await this.audiencesService.findManyWithPagination(
-        {
-          page,
-          limit,
-        },
-        {
-          userId: user.id,
-        },
-      ),
-      { page, limit },
-    );
+  ): Promise<PageDto<AudienceGroup>> {
+    return this.audiencesService.findManyWithPagination(dto, {
+      userId: user.id,
+    });
   }
 
   @Get(':id')

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PromisePool } from '@supercharge/promise-pool';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Like, Repository } from 'typeorm';
+import { DeepPartial, FindOptionsOrder, Like, Raw, Repository } from 'typeorm';
 import { Drop } from './entities/drop.entity';
 import { CreateDropDto } from './dto/create-drop.dto';
 import { IPaginationOptions } from 'src/utils/types/pagination-options';
@@ -25,6 +25,10 @@ import { User } from 'src/users/entities/user.entity';
 import { Order, PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 import { PageMetaDto } from 'src/utils/dtos/page-meta.dto';
 import { PageDto } from 'src/utils/dtos/page.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { ConfigService } from '@nestjs/config';
+import { AllConfigType, AppConfig } from 'src/config/config.type';
 
 @Injectable()
 export class DropsService {
@@ -37,6 +41,8 @@ export class DropsService {
     private audienceGroupsService: AudienceGroupsService,
     private connectionService: ConnectionService,
     private mintNFTService: MintNFTService,
+    @InjectQueue('airdrop') private readonly airdropQueue: Queue,
+    private configService: ConfigService<AllConfigType>,
   ) {}
 
   async create(
@@ -76,6 +82,20 @@ export class DropsService {
     return drop;
   }
 
+  async getDropPrice({ nftId, groupId }: CreateDropDto): Promise<number> {
+    const nft = await this.nftsService.findOne({ id: nftId });
+    const group = await this.audienceGroupsService.findOne({ id: groupId });
+
+    const audiences = await this.audienceGroupsService.findAudiencesByGroup(
+      group.id,
+    );
+
+    return (
+      audiences.length *
+      this.configService.getOrThrow('solana.nftPrice', { infer: true })
+    );
+  }
+
   async update(id: Drop['id'], payload: DeepPartial<Drop>): Promise<Drop> {
     await this.findOne({ id });
 
@@ -104,11 +124,17 @@ export class DropsService {
     });
   }
 
-  async findAll(dto: PageOptionsDto, user: User) {
+  async findAll(
+    dto: PageOptionsDto,
+    where?: EntityCondition<Drop>,
+    order: FindOptionsOrder<Drop> = { createdAt: dto.order },
+  ) {
     const [result, total] = await this.dropsRepository.findAndCount({
       where: {
-        name: Like('%' + dto.q?.toLowerCase() ?? '' + '%'),
-        userId: user.id,
+        name: Raw((alias) => `LOWER(${alias}) LIKE LOWER(:name)`, {
+          name: `%${dto.q}%`,
+        }),
+        ...where,
       },
       order: { createdAt: dto.order },
       take: dto.take,
@@ -142,28 +168,28 @@ export class DropsService {
       where: {
         dropId: drop.id,
       },
+      order: {
+        createdAt: 'ASC',
+      },
     });
 
     return transactions;
   }
 
   async createBulkDropTxs(dropId: Drop['id']): Promise<boolean> {
+    const currentJob = await this.airdropQueue.getActiveCount();
+    console.log('===================? :', currentJob);
+
     const drop = await this.findOne({ id: dropId });
     const nft = await this.nftsService.findOne({
       id: drop.nftId,
     });
 
-    // const group = await this.audienceGroupsService.findOne({
-    //   id: drop.groupId,
-    // });
-
     const transactions = await this.findTransactions(drop.id);
 
     console.log('transactions: ', transactions.length);
 
-    const connection = this.connectionService.getConnection();
     const payer = this.connectionService.feePayer;
-    const tree = this.connectionService.tree;
 
     const collectionMetadata: CreateMetadataAccountArgsV3 = {
       data: {
@@ -185,7 +211,7 @@ export class DropsService {
       collectionDetails: null,
     };
 
-    // console.log('collectionMetadata: ', collectionMetadata);
+    console.log('collectionMetadata: ', collectionMetadata);
 
     let collectionMint: PublicKey | null = null;
     let metadataAccount: PublicKey | null = null;
@@ -207,89 +233,41 @@ export class DropsService {
 
     console.log('Mint collection success');
 
-    // console.log('mint: ', mint);
-    // console.log('metadataAccount: ', metadataAccount);
-    // console.log('masterEditionAccount: ', masterEditionAccount);
-
-    await PromisePool.for(transactions)
-      .withConcurrency(5)
-      .process(async (tx) => {
-        try {
-          // mint nft
-          const metadata: MetadataArgs = {
-            name: nft.name,
-            symbol: nft.symbol,
-            uri: nft.metadataUri,
-            // @ts-ignore
-            creators: [
-              {
-                address: payer.publicKey,
-                verified: false,
-                share: 100,
-              },
-            ].filter(Boolean),
-            editionNonce: 0,
-            uses: null,
-            collection: null,
-            primarySaleHappened: false,
-            sellerFeeBasisPoints: 0,
-            isMutable: false,
-            // these values are taken from the Bubblegum package
-            tokenProgramVersion: TokenProgramVersion.Original,
-            tokenStandard: TokenStandard.NonFungible,
-          };
-
-          // console.log('metadata: ', metadata);
-
-          const { mint: mintAddress, signature } =
-            await this.mintNFTService.mintCompressedNFTV2(
-              connection,
-              payer,
-              tree,
-              new PublicKey(collectionMint!),
-              new PublicKey(metadataAccount!),
-              new PublicKey(masterEditionAccount!),
-              metadata,
-              new PublicKey(tx.wallet),
-            );
-
-          console.log('signature: ', signature);
-
-          // update to db
-
-          Promise.all([
-            this.dropTxsRepository.save(
-              this.dropTxsRepository.create({
-                id: tx.id,
-                nftAddress: mintAddress,
-                signature,
-                status: DropTxStatus.SUCCESS,
-                drop,
-              }),
-            ),
-            this.dropsRepository.increment({ id: drop.id }, 'mintedNft', 1),
-          ]);
-        } catch (error: any) {
-          return this.dropTxsRepository.save(
-            this.dropTxsRepository.create({
-              id: tx.id,
-              status: DropTxStatus.FAILED,
-            }),
-          );
-        }
-      });
+    this.airdropQueue.addBulk(
+      transactions.map((tx) => ({
+        name: 'drop',
+        data: {
+          nft,
+          drop,
+          tx,
+          collection: {
+            collectionMint,
+            metadataAccount,
+            masterEditionAccount,
+          },
+        },
+        opts: {
+          removeOnComplete: true,
+        },
+      })),
+    );
 
     return true;
   }
 
-  async findAllTransactions(dto: PageOptionsDto, dropId: string) {
+  async findTransactionsManyWithPagination(
+    dto: PageOptionsDto,
+    where?: EntityCondition<DropTransaction>,
+    order: FindOptionsOrder<DropTransaction> = { createdAt: dto.order },
+  ) {
     const [result, total] = await this.dropTxsRepository.findAndCount({
-      // @ts-ignore
       where: {
-        wallet: Like('%' + dto.q?.toLowerCase() ?? '' + '%'),
-        dropId,
+        wallet: Raw((alias) => `LOWER(${alias}) LIKE LOWER(:name)`, {
+          name: `%${dto.q}%`,
+        }),
+        ...where,
       },
-      order: { createdAt: dto.order },
+      order,
       take: dto.take,
       skip: dto.skip,
     });

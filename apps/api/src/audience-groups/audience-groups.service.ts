@@ -7,11 +7,12 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial, FindOptionsOrder, Raw, Repository } from 'typeorm';
 import { AudienceGroup } from './entities/audience-group.entity';
 import {
   CreateAudienceGroupDto,
   CreateAudienceGroupWithCsvDto,
+  CreateAudienceGroupWithCollectionDto,
 } from './dto/create-group.dto';
 import { IPaginationOptions } from 'src/utils/types/pagination-options';
 import { EntityCondition } from 'src/utils/types/entity-condition.type';
@@ -24,6 +25,8 @@ import { ICsvRecord } from 'src/utils/types/csv-record.type';
 import { isPublicKey } from 'src/utils/validators/is-public-key';
 import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 import { PageDto } from 'src/utils/dtos/page.dto';
+import { CollectionService } from 'src/shared/services/collection-service';
+import { PageMetaDto } from 'src/utils/dtos/page-meta.dto';
 
 @Injectable()
 export class AudienceGroupsService {
@@ -32,6 +35,7 @@ export class AudienceGroupsService {
     private audienceGroupsRepository: Repository<AudienceGroup>,
     @Inject(forwardRef(() => AudiencesService))
     private audiencesService: AudiencesService,
+    private collectionService: CollectionService,
   ) {}
 
   async create(
@@ -70,9 +74,11 @@ export class AudienceGroupsService {
         throw new UnprocessableEntityException('Invalid CSV file');
       }
 
-      const validRecords = results.filter((item) => isPublicKey(item.Wallets));
-
       console.log('results', results);
+      const validRecords = results.filter((item) => isPublicKey(item.Wallets));
+      console.log('validRecords', validRecords);
+
+      // console.log('results', results);
 
       const group = await this.audienceGroupsRepository.save(
         this.audienceGroupsRepository.create({
@@ -85,6 +91,36 @@ export class AudienceGroupsService {
       await this.audiencesService.bulkCreate(
         validRecords.map((record) => ({
           wallet: record.Wallets,
+          groupId: group.id,
+        })),
+      );
+
+      return group;
+    } catch (error: any) {
+      throw new InternalServerErrorException(error?.message || 'Server error');
+    }
+  }
+
+  async createWithCollection(
+    dto: CreateAudienceGroupWithCollectionDto,
+    user: User,
+  ): Promise<AudienceGroup> {
+    try {
+      const wallets = await this.collectionService.loadHoldersOfCollection(
+        dto.collection,
+      );
+
+      const group = await this.audienceGroupsRepository.save(
+        this.audienceGroupsRepository.create({
+          ...dto,
+          numOfAudience: wallets.length,
+          user,
+        }),
+      );
+
+      await this.audiencesService.bulkCreate(
+        wallets.map((record) => ({
+          wallet: record.address,
           groupId: group.id,
         })),
       );
@@ -156,15 +192,31 @@ export class AudienceGroupsService {
     await this.audienceGroupsRepository.softDelete(id);
   }
 
-  findManyWithPagination(
-    paginationOptions: IPaginationOptions,
+  async findManyWithPagination(
+    dto: PageOptionsDto,
     where?: EntityCondition<AudienceGroup>,
-  ): Promise<AudienceGroup[]> {
-    return this.audienceGroupsRepository.find({
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
-      where,
+    order: FindOptionsOrder<AudienceGroup> = { createdAt: dto.order },
+  ): Promise<PageDto<AudienceGroup>> {
+    const [result, total] = await this.audienceGroupsRepository.findAndCount({
+      where: [
+        {
+          name: Raw((alias) => `LOWER(${alias}) LIKE LOWER(:name)`, {
+            name: `%${dto.q}%`,
+          }),
+          ...where,
+        },
+      ],
+      order,
+      take: dto.take,
+      skip: dto.skip,
     });
+
+    const pageMetaDto = new PageMetaDto({
+      itemCount: total,
+      pageOptionsDto: dto,
+    });
+
+    return new PageDto(result, pageMetaDto);
   }
 
   async findOne(

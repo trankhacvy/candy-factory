@@ -449,7 +449,7 @@ export function NewNFTForm() {
             </div>
           </div>
 
-          {/* <div className="flex justify-end">
+          <div className="flex justify-end">
             {connected ? (
               <Button loading={form.formState.isSubmitting} type="submit">
                 Create
@@ -457,7 +457,7 @@ export function NewNFTForm() {
             ) : (
               <ConnectWalletButton />
             )}
-          </div> */}
+          </div>
         </form>
       </Form>
     </div>

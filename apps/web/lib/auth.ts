@@ -87,12 +87,18 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     session: async ({ session, token, user }) => {
-      //   console.log("[session] session", session)
-      //   console.log("[session] token", token)
+      // console.log("[session] session", session)
+      // console.log("[session] token", token)
       //   console.log("[session] user", user)
+
+      const isValid = isValidAccessToken(token.accessToken)
 
       session.accessToken = token.accessToken
       session.user = token.user
+
+      if (!isValid) {
+        session.error = "TOKEN_EXPIRED"
+      }
 
       return session
     },
@@ -100,4 +106,28 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
   },
+}
+
+function parseJWT(token: string) {
+  return JSON.parse(Buffer.from(token.split(".")[1], "base64").toString())
+}
+
+type JwtObject = {
+  id: number
+  sessionId: number
+  iat: number
+  exp: number
+}
+
+function isValidAccessToken(token: string) {
+  try {
+    const jwt = parseJWT(token ?? "") as JwtObject
+    const exp = jwt.exp ?? 0
+
+    const currentTime = Math.floor(Date.now() / 1000)
+
+    return exp >= currentTime
+  } catch (error) {
+    return false
+  }
 }

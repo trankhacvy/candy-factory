@@ -1,4 +1,12 @@
-import { Audience, AudienceGroup, CreateDropDto, Drop, DropTransaction, NFT } from "@/types/schema"
+import {
+  Audience,
+  AudienceGroup,
+  CreateAudienceGroupWithCollectionDto,
+  CreateDropDto,
+  Drop,
+  DropTransaction,
+  NFT,
+} from "@/types/schema"
 import qs from "query-string"
 import fetcher from "./fetcher"
 import { BaseListResponse, BaseListResponseV2, BaseResponse, PageOptionRequest, PaginationRequest } from "@/types"
@@ -81,8 +89,8 @@ class Api {
 
   // nfts
 
-  public getNFTs(request: PaginationRequest = { page: 1, limit: 10 }) {
-    return fetcher<BaseResponse<BaseListResponse<NFT>>>(`${BASE_URL}/nfts?${qs.stringify(request)}`, {
+  public getNFTs(request: PageOptionRequest = {}) {
+    return fetcher<BaseResponse<BaseListResponseV2<NFT>>>(`${BASE_URL}/nfts?${qs.stringify(request)}`, {
       headers: this.headers,
     })
   }
@@ -108,6 +116,14 @@ class Api {
       },
       method: "POST",
       body,
+    })
+  }
+
+  public createGroupWithCollection(body: CreateAudienceGroupWithCollectionDto) {
+    return fetcher<BaseResponse<AudienceGroup>>(`${BASE_URL}/audience-groups/collection`, {
+      headers: this.headers,
+      method: "POST",
+      body: JSON.stringify(body),
     })
   }
 
