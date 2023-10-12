@@ -171,6 +171,12 @@ class Api {
       body: JSON.stringify(body),
     })
   }
+
+  public getTransactions(request: PageOptionRequest = {}) {
+    return fetcher<BaseResponse<BaseListResponseV2<Transaction>>>(`${BASE_URL}/transactions?${qs.stringify(request)}`, {
+      headers: this.headers,
+    })
+  }
 }
 
 export default new Api()

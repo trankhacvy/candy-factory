@@ -1,3 +1,4 @@
+import { TransactionsTable } from "@/components/settings/transaction-table"
 import { Typography } from "@/components/ui/typography"
 
 export default function SettingsPage() {
@@ -10,6 +11,7 @@ export default function SettingsPage() {
           </Typography>
         </div>
       </div>
+      <TransactionsTable />
     </div>
   )
 }

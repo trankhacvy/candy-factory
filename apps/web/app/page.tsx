@@ -727,7 +727,7 @@ const CallToAction = () => {
             <p className="text-center text-xl text-gray-600 dark:text-gray-300">
               Start launching your NFT airdrop today with Candy Factory
             </p>
-            <div className="flex flex-wrap justify-center gap-6">
+            <div className="flex items-center justify-center gap-6">
               <LandingSignUpButton />
             </div>
           </div>

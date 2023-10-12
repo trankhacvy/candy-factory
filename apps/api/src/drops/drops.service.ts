@@ -254,7 +254,7 @@ export class DropsService {
         dropId: drop.id,
       },
       order: {
-        createdAt: 'ASC',
+        createdAt: 'DESC',
       },
     });
 
@@ -354,7 +354,7 @@ export class DropsService {
     console.log('Mint collection success');
 
     this.airdropQueue.addBulk(
-      transactions.map((tx) => ({
+      transactions.map((tx, idx) => ({
         data: {
           type: 'airdrop',
           payload: {

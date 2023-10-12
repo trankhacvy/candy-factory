@@ -17,7 +17,7 @@ export function useFetchDrop(dropId?: string) {
     {
       refreshInterval: (data) => {
         const drop = data?.data
-        return drop ? (drop.mintedNft < drop.numOfNft ? 2000 : 0) : 0
+        return drop ? (drop.mintedNft < drop.numOfNft ? 3000 : 0) : 0
       },
     }
   )

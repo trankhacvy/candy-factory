@@ -36,8 +36,6 @@ export function DropTransactions({ drop }: { drop?: Drop }) {
     [pageIndex, pageSize]
   )
 
-  console.log("check refresh", drop && drop.mintedNft < drop.numOfNft)
-
   const { data: transactionsData, isLoading: isTxLoading } = useFetchDropTxs(
     String(drop?.id),
     pageRequest,
@@ -45,8 +43,6 @@ export function DropTransactions({ drop }: { drop?: Drop }) {
   )
 
   const transactions = transactionsData?.data?.data ?? []
-
-  console.log({ pageIndex, pageSize, len: transactions.length })
 
   const pagination = useMemo(
     () => ({

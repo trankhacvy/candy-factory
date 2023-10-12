@@ -61,8 +61,8 @@ function AdminUserMenu() {
       <PopoverTrigger asChild>
         <button>
           <Avatar className="bg-gray-500/24">
-            <AvatarImage src={`https://avatar.vercel.sh/demo@xx.com`} alt="David" />
-            <AvatarFallback className="bg-primary-500 text-xl text-white">David</AvatarFallback>
+            <AvatarImage src={`https://avatar.vercel.sh/demo@xx.com`} alt={session?.user.wallet ?? ""} />
+            <AvatarFallback className="bg-primary-500 text-xl text-white">{session?.user.wallet ?? ""}</AvatarFallback>
           </Avatar>
         </button>
       </PopoverTrigger>
@@ -78,13 +78,10 @@ function AdminUserMenu() {
             <a
               onClick={async (event) => {
                 event.preventDefault()
-                console.log("logout 1")
                 signOut({
                   callbackUrl: "/login",
                 })
-                console.log("logout 2")
                 api.withToken(session?.accessToken).logout()
-                console.log("logout 3")
                 disconnect()
               }}
             >

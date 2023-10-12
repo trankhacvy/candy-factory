@@ -30,7 +30,7 @@ export default function LandingSignUpButton() {
   }
 
   return (
-    <Button fullWidth as={Link} href="/dashboard">
+    <Button className="px-6" size="lg" as={Link} href="/dashboard">
       Dashboard
     </Button>
   )

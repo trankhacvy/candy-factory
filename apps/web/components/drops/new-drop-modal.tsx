@@ -38,6 +38,7 @@ import { mutate } from "swr"
 import { transferSolTx } from "@/lib/solana"
 import { PublicKey } from "@solana/web3.js"
 import { MASTER_WALLET } from "@/config/env"
+import { formatNumber } from "@/utils/number"
 
 type NewDropModalProps = {
   trigger: React.ReactNode
@@ -68,11 +69,9 @@ const walletsFormSchema = z.discriminatedUnion("type", [fromGroupFormSchema, fro
 export const dropFormSchema = z.intersection(walletsFormSchema, baseFormSchema)
 
 export const NewDropModal = ({ trigger }: NewDropModalProps) => {
-  const { toast } = useToast()
   const wallet = useWallet()
   const { publicKey } = wallet
   const [open, setIsOpen] = useState(false)
-  const { push } = useRouter()
 
   const { data: nfts } = useFetchNFTs()
 
@@ -87,39 +86,21 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
     },
   })
 
-  const onSubmit = async (values: z.infer<typeof dropFormSchema>) => {
+  const onSubmit = async () => {
     setStep("review")
-    // try {
-    //   console.log(values)
-
-    //   const { success, data, error } = await createDrop(values)
-
-    //   if (success) {
-    //     toast({
-    //       variant: "success",
-    //       title: "New drop created successfully",
-    //     })
-    //     await mutate("fetch-drops")
-    //     setIsOpen(false)
-    //     push(`/dashboard/${data?.id}`)
-    //   } else {
-    //     toast({
-    //       variant: "error",
-    //       title: error,
-    //     })
-    //   }
-    // } catch (error: any) {
-    //   console.error(error)
-    //   toast({
-    //     variant: "error",
-    //     title: error?.message ?? "Server error",
-    //   })
-    // }
   }
 
   useEffect(() => {
     form.setValue("type", tab)
   }, [tab, form])
+
+  useEffect(() => {
+    if (!open) {
+      setTab("group")
+      setStep("config")
+      form.reset()
+    }
+  }, [open, setTab, form])
 
   return (
     <>
@@ -319,8 +300,10 @@ const ReviewStep = ({ setIsOpen }: any) => {
   const { watch, getValues } = useFormContext<z.infer<typeof dropFormSchema>>()
   const { toast } = useToast()
   const { push } = useRouter()
+  const { data: nfts } = useFetchNFTs()
 
   const nftId = watch("nftId")
+  const nft = nfts?.data?.data.find((nft) => String(nft.id) === nftId)
   const groupId = watch("groupId")
   const collection = watch("collection")
 
@@ -373,14 +356,15 @@ const ReviewStep = ({ setIsOpen }: any) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      <div className="flex justify-center">
+        <Image className="rounded-xl" src={nft?.image ?? ""} width={120} height={120} alt={nft?.name ?? ""} />
+      </div>
       <div className="flex justify-between">
         <Typography level="body4" color="secondary">
           NFT
         </Typography>
-        <Typography level="body4" className="font-semibold">
-          {nftId}
-        </Typography>
+        <Typography className="font-semibold">{nft?.name}</Typography>
       </div>
       <div className="flex justify-between">
         <Typography level="body4" color="secondary">
@@ -389,9 +373,7 @@ const ReviewStep = ({ setIsOpen }: any) => {
         {isLoading ? (
           <Skeleton className="w-20 h-4 rounded-md" />
         ) : (
-          <Typography level="body4" className="font-semibold">
-            {data?.data?.totalWallets}
-          </Typography>
+          <Typography className="font-semibold">{formatNumber(data?.data?.totalWallets ?? 0)}</Typography>
         )}
       </div>
       <div className="flex justify-between">
@@ -401,9 +383,7 @@ const ReviewStep = ({ setIsOpen }: any) => {
         {isLoading ? (
           <Skeleton className="w-20 h-4 rounded-md" />
         ) : (
-          <Typography level="body4" className="font-semibold">
-            {data?.data?.price}
-          </Typography>
+          <Typography className="font-semibold">{data?.data?.price}</Typography>
         )}
       </div>
 

@@ -29,19 +29,19 @@ export default function DropDetail() {
           <IconButton as={Link} size="sm" href="/dashboard">
             <ChevronLeftIcon />
           </IconButton>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col items-start gap-1">
             <div className="flex items-center gap-2">
               <Typography as="h4" level="body1" className="font-bold lg:text-2xl">
                 {drop?.name}
               </Typography>
-              <Badge className="gap-2" variant={isFinished ? "success" : "info"}>
-                {`${isFinished ? "Sent" : "Sending"} ${drop?.mintedNft}/${drop?.numOfNft}`}
-                {!isFinished && <Loader2Icon className="w-4 h-4 animate-spin duration-500" />}
-              </Badge>
             </div>
             <Typography level="body4" color="secondary">
               {dayjs(drop?.createdAt).format("DD/MM/YYYY")}
             </Typography>
+            <Badge className="gap-2" variant={isFinished ? "success" : "info"}>
+              {`${isFinished ? "Sent" : "Sending"} ${drop?.mintedNft}/${drop?.numOfNft}`}
+              {!isFinished && <Loader2Icon className="w-4 h-4 animate-spin duration-500" />}
+            </Badge>
           </div>
         </div>
       </div>
