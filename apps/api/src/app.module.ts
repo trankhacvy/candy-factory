@@ -15,6 +15,7 @@ import { AudiencesModule } from './audiences/audiences.module';
 import { AudienceGroupsModule } from './audience-groups/audience-groups.module';
 import { NFTsModule } from './nfts/nfts.module';
 import { DropsModule } from './drops/drops.module';
+import { TransactionsModule } from './transactions/transactions.module';
 import { SharedModule } from './shared/shared.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformInterceptor } from './utils/interceptors/response-transform.interceptor';
@@ -42,6 +43,7 @@ import redisConfig from './config/redis.config';
     AudienceGroupsModule,
     NFTsModule,
     DropsModule,
+    TransactionsModule,
     SharedModule,
     AuthModule,
     BullModule.forRootAsync({

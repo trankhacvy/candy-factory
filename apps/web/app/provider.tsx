@@ -1,6 +1,6 @@
 "use client"
 
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react"
+import { ConnectionProvider, WalletProvider, useWallet } from "@solana/wallet-adapter-react"
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui"
 import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets"
 import { PropsWithChildren, useEffect, useMemo } from "react"
@@ -8,6 +8,7 @@ import { SOLANA_CLUSTER, SOLANA_PRC } from "@/config/env"
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base"
 import { SessionProvider, signOut, useSession } from "next-auth/react"
 import api from "@/lib/api"
+import { useWalletLogin } from "@/hooks/use-wallet-login"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const network = SOLANA_CLUSTER as WalletAdapterNetwork
@@ -29,6 +30,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 const Wrapper = ({ children }: PropsWithChildren) => {
   const { data: session, status } = useSession()
+  const { connected } = useWallet()
+  const { handleSignIn } = useWalletLogin()
 
   useEffect(() => {
     if (status === "authenticated" && session.error) {
@@ -40,6 +43,23 @@ const Wrapper = ({ children }: PropsWithChildren) => {
       }
     }
   }, [session, status])
+
+  useEffect(() => {
+    if (connected && status === "unauthenticated") {
+      handleSignIn()
+    }
+  }, [connected, status, handleSignIn])
+
+  // useEffect(() => {
+  //   if (!connected && status === "authenticated") {
+  //     signOut()
+  //     try {
+  //       api.withToken(session.accessToken).logout()
+  //     } catch (error) {
+  //       // ignore
+  //     }
+  //   }
+  // }, [connected, status, session])
 
   return <>{children}</>
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useWallet } from "@solana/wallet-adapter-react"
+import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { XIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -26,12 +26,18 @@ import { Input } from "../ui/input"
 import { useToast } from "../ui/toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useFetchContactGroups } from "@/hooks/use-fetch-contact-groups"
-import { createDrop } from "@/app/(dashboard)/dashboard/drops.action"
-import { mutate } from "swr"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { TopCollections } from "@/utils/top-collections"
 import { AspectRatio } from "../ui/aspect-ratio"
 import { cn } from "@/utils/cn"
+import { Typography } from "../ui/typography"
+import { useEstimatePrice } from "@/hooks/use-estimate-price"
+import { Skeleton } from "../ui/skeleton"
+import { createDrop } from "@/app/(dashboard)/dashboard/drops.action"
+import { mutate } from "swr"
+import { transferSolTx } from "@/lib/solana"
+import { PublicKey } from "@solana/web3.js"
+import { MASTER_WALLET } from "@/config/env"
 
 type NewDropModalProps = {
   trigger: React.ReactNode
@@ -59,7 +65,7 @@ const fromCollectionFormSchema = z.object({
 
 const walletsFormSchema = z.discriminatedUnion("type", [fromGroupFormSchema, fromCollectionFormSchema])
 
-const dropFormSchema = z.intersection(walletsFormSchema, baseFormSchema)
+export const dropFormSchema = z.intersection(walletsFormSchema, baseFormSchema)
 
 export const NewDropModal = ({ trigger }: NewDropModalProps) => {
   const { toast } = useToast()
@@ -71,6 +77,7 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
   const { data: nfts } = useFetchNFTs()
 
   const [tab, setTab] = useState<"group" | "collection">("group")
+  const [step, setStep] = useState<"config" | "review">("config")
 
   const form = useForm<z.infer<typeof dropFormSchema>>({
     resolver: zodResolver(dropFormSchema),
@@ -81,32 +88,33 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
   })
 
   const onSubmit = async (values: z.infer<typeof dropFormSchema>) => {
-    try {
-      console.log(values)
+    setStep("review")
+    // try {
+    //   console.log(values)
 
-      const { success, data, error } = await createDrop(values)
+    //   const { success, data, error } = await createDrop(values)
 
-      if (success) {
-        toast({
-          variant: "success",
-          title: "New drop created successfully",
-        })
-        await mutate("fetch-drops")
-        setIsOpen(false)
-        push(`/dashboard/${data?.id}`)
-      } else {
-        toast({
-          variant: "error",
-          title: error,
-        })
-      }
-    } catch (error: any) {
-      console.error(error)
-      toast({
-        variant: "error",
-        title: error?.message ?? "Server error",
-      })
-    }
+    //   if (success) {
+    //     toast({
+    //       variant: "success",
+    //       title: "New drop created successfully",
+    //     })
+    //     await mutate("fetch-drops")
+    //     setIsOpen(false)
+    //     push(`/dashboard/${data?.id}`)
+    //   } else {
+    //     toast({
+    //       variant: "error",
+    //       title: error,
+    //     })
+    //   }
+    // } catch (error: any) {
+    //   console.error(error)
+    //   toast({
+    //     variant: "error",
+    //     title: error?.message ?? "Server error",
+    //   })
+    // }
   }
 
   useEffect(() => {
@@ -124,65 +132,71 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input fullWidth placeholder="eg. New article release" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {step === "config" && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input fullWidth placeholder="eg. New article release" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="nftId"
-                render={({ field }) => (
-                  <FormItem className="mt-5">
-                    <FormLabel>NFT</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select the NFT" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {nfts?.data?.data?.map((nft) => (
-                          <SelectItem key={nft.id} value={String(nft.id)}>
-                            <div className="!flex items-center gap-3">
-                              <Image
-                                src={nft.image ?? ""}
-                                className="rounded-md"
-                                alt={nft.name ?? ""}
-                                width={32}
-                                height={32}
-                              />
-                              {nft.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="nftId"
+                    render={({ field }) => (
+                      <FormItem className="mt-5">
+                        <FormLabel>NFT</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select the NFT" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {nfts?.data?.data?.map((nft) => (
+                              <SelectItem key={nft.id} value={String(nft.id)}>
+                                <div className="!flex items-center gap-3">
+                                  <Image
+                                    src={nft.image ?? ""}
+                                    className="rounded-md"
+                                    alt={nft.name ?? ""}
+                                    width={32}
+                                    height={32}
+                                  />
+                                  {nft.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <DropsTab value={tab} onValueChange={setTab} />
+                  <DropsTab value={tab} onValueChange={setTab} />
 
-              <AlertDialogFooter className="mt-10">
-                {publicKey ? (
-                  <Button loading={form.formState.isSubmitting} type="submit" fullWidth>
-                    Create
-                  </Button>
-                ) : (
-                  <ConnectWalletButton />
-                )}
-              </AlertDialogFooter>
+                  <AlertDialogFooter className="mt-10">
+                    {publicKey ? (
+                      <Button loading={form.formState.isSubmitting} type="submit" fullWidth>
+                        Create
+                      </Button>
+                    ) : (
+                      <ConnectWalletButton />
+                    )}
+                  </AlertDialogFooter>
+                </>
+              )}
+
+              {step === "review" && <ReviewStep setIsOpen={setIsOpen} />}
             </form>
           </Form>
 
@@ -295,5 +309,111 @@ const CollectionTab = () => {
         </FormItem>
       )}
     />
+  )
+}
+
+const ReviewStep = ({ setIsOpen }: any) => {
+  const [loading, setLoading] = useState(false)
+  const { publicKey, sendTransaction } = useWallet()
+  const { connection } = useConnection()
+  const { watch, getValues } = useFormContext<z.infer<typeof dropFormSchema>>()
+  const { toast } = useToast()
+  const { push } = useRouter()
+
+  const nftId = watch("nftId")
+  const groupId = watch("groupId")
+  const collection = watch("collection")
+
+  const { data, isLoading } = useEstimatePrice(groupId ? Number(groupId) : undefined, collection)
+
+  const onSubmit = async () => {
+    try {
+      if (!publicKey || !data?.data?.price) return
+
+      setLoading(true)
+      const tx = transferSolTx(publicKey, new PublicKey(MASTER_WALLET), data.data.price)
+
+      const signature = await sendTransaction(tx, connection)
+
+      await connection.confirmTransaction(signature, "processed")
+
+      const {
+        success,
+        data: drop,
+        error,
+      } = await createDrop(getValues(), {
+        signature,
+        amount: data.data.price,
+        sender: publicKey.toBase58(),
+      })
+
+      if (success) {
+        toast({
+          variant: "success",
+          title: "New drop created successfully",
+        })
+        await mutate("fetch-drops")
+        setIsOpen(false)
+        push(`/dashboard/${drop?.id}`)
+      } else {
+        toast({
+          variant: "error",
+          title: error,
+        })
+      }
+    } catch (error: any) {
+      console.error(error)
+      toast({
+        variant: "error",
+        title: error?.message ?? "Server error",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between">
+        <Typography level="body4" color="secondary">
+          NFT
+        </Typography>
+        <Typography level="body4" className="font-semibold">
+          {nftId}
+        </Typography>
+      </div>
+      <div className="flex justify-between">
+        <Typography level="body4" color="secondary">
+          Wallets
+        </Typography>
+        {isLoading ? (
+          <Skeleton className="w-20 h-4 rounded-md" />
+        ) : (
+          <Typography level="body4" className="font-semibold">
+            {data?.data?.totalWallets}
+          </Typography>
+        )}
+      </div>
+      <div className="flex justify-between">
+        <Typography level="body4" color="secondary">
+          Est price
+        </Typography>
+        {isLoading ? (
+          <Skeleton className="w-20 h-4 rounded-md" />
+        ) : (
+          <Typography level="body4" className="font-semibold">
+            {data?.data?.price}
+          </Typography>
+        )}
+      </div>
+
+      {publicKey ? (
+        <Button onClick={onSubmit} loading={loading} disabled={isLoading || loading} type="submit" fullWidth>
+          Submit
+        </Button>
+      ) : (
+        <ConnectWalletButton />
+      )}
+    </div>
   )
 }

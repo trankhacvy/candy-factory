@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { DropsService } from './drops.service';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateDropDto } from './dto/create-drop.dto';
 import { Drop } from './entities/drop.entity';
@@ -22,6 +22,8 @@ import { User } from 'src/users/entities/user.entity';
 import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 import { PageDto } from 'src/utils/dtos/page.dto';
 import { TransactionsPageOptionsDto } from './dto/transaction-page-option.dto';
+import { EstimatePriceDto } from './dto/estimate-price.dto';
+import { EstimatePriceResponseDto } from './dto/estimate-price-response.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
@@ -39,9 +41,11 @@ export class DropsController {
     return this.dropsService.create(dto, user);
   }
 
-  @Post('/get-price')
-  getPrice(@Body() dto: CreateDropDto): Promise<number> {
-    return this.dropsService.getDropPrice(dto);
+  @Post('/estimate-price')
+  estimatePrice(
+    @Body() dto: EstimatePriceDto,
+  ): Promise<EstimatePriceResponseDto> {
+    return this.dropsService.estimatePrice(dto);
   }
 
   @Patch(':id')

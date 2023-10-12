@@ -1,8 +1,6 @@
-import { NFTTable } from "@/components/nfts/nft-table"
-import { SignUpForm } from "@/components/signup-form"
 import { Typography } from "@/components/ui/typography"
 
-export default function SignUpFormPage() {
+export default function SettingsPage() {
   return (
     <div className="mx-auto w-full max-w-screen-xl space-y-12">
       <div className="flex flex-col gap-6">

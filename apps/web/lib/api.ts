@@ -3,9 +3,13 @@ import {
   AudienceGroup,
   CreateAudienceGroupWithCollectionDto,
   CreateDropDto,
+  CreateTransactionDto,
   Drop,
   DropTransaction,
+  EstimatePriceDto,
+  EstimatePriceResponseDto,
   NFT,
+  Transaction,
 } from "@/types/schema"
 import qs from "query-string"
 import fetcher from "./fetcher"
@@ -87,6 +91,14 @@ class Api {
     })
   }
 
+  public estimateDropPrice(requestBody: EstimatePriceDto) {
+    return fetcher<BaseResponse<EstimatePriceResponseDto>>(`${BASE_URL}/drops/estimate-price`, {
+      headers: this.headers,
+      method: "POST",
+      body: JSON.stringify(requestBody),
+    })
+  }
+
   // nfts
 
   public getNFTs(request: PageOptionRequest = {}) {
@@ -149,6 +161,15 @@ class Api {
         headers: this.headers,
       }
     )
+  }
+
+  //transactions
+  public createTransaction(body: CreateTransactionDto) {
+    return fetcher<BaseResponse<Transaction>>(`${BASE_URL}/transactions`, {
+      headers: this.headers,
+      method: "POST",
+      body: JSON.stringify(body),
+    })
   }
 }
 

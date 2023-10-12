@@ -12,6 +12,7 @@ import { DashboardNavMobile } from "./nav"
 import { signOut, useSession } from "next-auth/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import api from "@/lib/api"
+import truncate from "@/utils/truncate"
 
 export default function DashboardHeader() {
   const [small, setSmall] = useState(false)
@@ -68,25 +69,27 @@ function AdminUserMenu() {
       <PopoverContent align="end" className="w-52 p-0">
         <div className="px-5 py-3">
           <Typography className="truncate font-semibold" as="h6" level="body4">
-            David
+            {truncate(session?.user.wallet ?? "", 12, true)}
           </Typography>
         </div>
         <Separator />
         <div className="p-2">
           <li className="cursor-pointer list-none rounded-md px-2 py-1.5 hover:bg-gray-500/8">
-            <Typography
-              onClick={async () => {
-                disconnect()
-                api.withToken(session?.accessToken).logout()
+            <a
+              onClick={async (event) => {
+                event.preventDefault()
+                console.log("logout 1")
                 signOut({
                   callbackUrl: "/login",
                 })
+                console.log("logout 2")
+                api.withToken(session?.accessToken).logout()
+                console.log("logout 3")
+                disconnect()
               }}
-              as="span"
-              level="body4"
             >
               Logout
-            </Typography>
+            </a>
           </li>
         </div>
       </PopoverContent>

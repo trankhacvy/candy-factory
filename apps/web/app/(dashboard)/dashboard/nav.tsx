@@ -1,6 +1,6 @@
 "use client"
 
-import { DropletIcon, HammerIcon, ImageIcon, Settings, WalletIcon } from "lucide-react"
+import { DropletIcon, ImageIcon, Settings, SettingsIcon, WalletIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams, useSelectedLayoutSegments } from "next/navigation"
@@ -38,13 +38,7 @@ export default function Nav() {
         name: "Settings",
         href: "/dashboard/settings",
         isActive: segments[0] === "settings",
-        icon: <HammerIcon width={18} />,
-      },
-      {
-        name: "Signup Form",
-        href: "/dashboard/sign-up-form",
-        isActive: segments[0] === "sign-up-form",
-        icon: <Settings width={18} />,
+        icon: <SettingsIcon width={18} />,
       },
     ]
   }, [segments, dropId])
@@ -106,10 +100,10 @@ export const DashboardNavMobile = ({ trigger }: { trigger: React.ReactNode }) =>
         icon: <ImageIcon width={18} />,
       },
       {
-        name: "Signup Form",
-        href: "/dashboard/sign-up-form",
-        isActive: segments[0] === "sign-up-form",
-        icon: <Settings width={18} />,
+        name: "Settings",
+        href: "/dashboard/settings",
+        isActive: segments[0] === "settings",
+        icon: <SettingsIcon width={18} />,
       },
     ]
   }, [segments, dropId])

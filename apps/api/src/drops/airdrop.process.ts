@@ -1,4 +1,4 @@
-import { Process, Processor } from '@nestjs/bull';
+import { OnQueueCompleted, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
@@ -17,6 +17,9 @@ import {
 } from '@metaplex-foundation/mpl-bubblegum';
 import { NFT } from 'src/nfts/entities/nft.entity';
 import { PublicKey } from '@solana/web3.js';
+import { JobDataModel } from 'src/utils/types/job.type';
+import { CollectionService } from 'src/shared/services/collection-service';
+import { DropsService } from './drops.service';
 
 @Processor('airdrop')
 export class AirdropProcessor {
@@ -27,26 +30,60 @@ export class AirdropProcessor {
     private dropsRepository: Repository<Drop>,
     @InjectRepository(DropTransaction)
     private dropTxsRepository: Repository<DropTransaction>,
-    // private nftsService: NFTsService,
-    // private audienceGroupsService: AudienceGroupsService,
+    private dropsService: DropsService,
     private connectionService: ConnectionService,
     private mintNFTService: MintNFTService,
+    private collectionService: CollectionService,
   ) {}
 
-  @Process({ name: 'drop', concurrency: 5 })
-  async handleTranscode(job: Job) {
-    this.logger.debug('Start transcoding...');
-    // this.logger.debug(job.data);
+  @Process({ concurrency: 1 })
+  async handleTranscode(job: Job<JobDataModel<any>>) {
+    this.logger.debug('Start transcoding...', job.id, job.data.type);
 
-    const nft = job.data.nft as NFT;
-    const drop = job.data.drop as Drop;
-    const tx = job.data.tx as DropTransaction;
-    const collection = job.data.collection as any;
+    if (job.data.type === 'airdrop') {
+      return await this.handleAirdropJob(job);
+    }
+
+    if (job.data.type === 'load_holders') {
+      return await this.loadHoldersJob(job);
+    }
+
+    return true;
+  }
+
+  @OnQueueCompleted()
+  onActive(job: Job, result: any) {
+    if (job.data.type === 'airdrop') {
+      this.handleAirdropJobSuccess(job, result);
+    } else if (job.data.type === 'load_holders') {
+      this.handleLoadHoldersSuccess(job, result);
+    }
+  }
+
+  // ---------------------------------- aridrop job
+  private async handleAirdropJob(
+    job: Job<
+      JobDataModel<{
+        nft: NFT;
+        drop: Drop;
+        tx: DropTransaction;
+        collection: any;
+      }>
+    >,
+  ) {
+    const {
+      data: { payload },
+    } = job;
+
+    const nft = payload.nft;
+    const drop = payload.drop;
+    const tx = payload.tx;
+    const collection = payload.collection as any;
 
     if (!nft || !drop || !tx || !collection) {
       console.log('NO data ==============>');
 
-      return;
+      return true;
     }
 
     const connection = this.connectionService.getConnection();
@@ -90,19 +127,82 @@ export class AirdropProcessor {
 
     console.log('mint success:', mintAddress);
 
+    this.logger.debug('Transcoding completed');
+
+    return { id: tx.id, nftAddress: mintAddress, signature };
+  }
+
+  private async handleAirdropJobSuccess(
+    job: Job<
+      JobDataModel<{
+        nft: NFT;
+        drop: Drop;
+        tx: DropTransaction;
+        collection: any;
+      }>
+    >,
+    result: any,
+  ) {
+    const {
+      data: { payload },
+    } = job;
+
+    const { id, nftAddress, signature } = result;
+
+    if (!id || !nftAddress || !signature) return;
+
     Promise.all([
       this.dropTxsRepository.save(
         this.dropTxsRepository.create({
-          id: tx.id,
-          nftAddress: mintAddress,
+          id,
+          nftAddress,
           signature,
           status: DropTxStatus.SUCCESS,
-          drop,
+          drop: payload.drop,
         }),
       ),
-      this.dropsRepository.increment({ id: drop.id }, 'mintedNft', 1),
+      this.dropsRepository.increment({ id: payload.drop.id }, 'mintedNft', 1),
     ]);
+  }
 
-    this.logger.debug('Transcoding completed');
+  // ----------------------- load holders job
+  private async loadHoldersJob(
+    job: Job<
+      JobDataModel<{
+        drop: Drop;
+        collection: string;
+      }>
+    >,
+  ) {
+    const { drop, collection } = job.data.payload;
+    this.logger.debug('Start fetching holder for collection: ' + collection);
+
+    const holders =
+      await this.collectionService.loadHoldersOfCollection(collection);
+
+    this.logger.debug('loadHoldersJob success: ', holders.length);
+
+    return { holders };
+  }
+
+  private async handleLoadHoldersSuccess(
+    job: Job<
+      JobDataModel<{
+        drop: Drop;
+        collection: string;
+      }>
+    >,
+    result: any,
+  ) {
+    const { drop } = job.data.payload;
+    const { holders } = result;
+
+    if (!holders || holders.length === 0) return;
+
+    const wallets = holders.map((holder) => holder.address);
+
+    await this.dropsService.update(drop.id, { numOfNft: wallets.length });
+
+    this.dropsService.createBulkDropTxs(drop, wallets);
   }
 }

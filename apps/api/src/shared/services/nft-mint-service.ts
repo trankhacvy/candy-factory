@@ -420,12 +420,6 @@ export class MintNFTService {
     );
 
     try {
-      // find mint
-      const totalNftMintedCount = (
-        await getTreeNonceCount(connection, treeAddress)
-      ).toNumber();
-      const mint = getAssetPDA(treeAddress, totalNftMintedCount).toBase58();
-
       // construct the transaction with our instructions, making the `payer` the `feePayer`
       const tx = new Transaction().add(...mintIxs);
       tx.feePayer = payer.publicKey;
@@ -442,7 +436,13 @@ export class MintNFTService {
       );
 
       console.log('\nSuccessfully minted the compressed NFT!');
-      //   console.log(explorerURL({ txSignature }));
+      //   console.log(explorerURL({ txSignature }));'
+
+      // find mint
+      const totalNftMintedCount = (
+        await getTreeNonceCount(connection, treeAddress)
+      ).toNumber();
+      const mint = getAssetPDA(treeAddress, totalNftMintedCount).toBase58();
 
       return { mint, signature: txSignature };
     } catch (err) {

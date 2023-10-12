@@ -1,21 +1,16 @@
 "use client"
 
-import LoginButton from "@/app/(auth)/login/login-button"
 import { Typography } from "@/components/ui/typography"
 import { siteConfig } from "@/config/site"
-import { useWallet } from "@solana/wallet-adapter-react"
-import { useSession } from "next-auth/react"
 import Image from "next/image"
 import { PropsWithChildren } from "react"
+import LandingConnectWallet from "./landing-wallet-button"
 
 const Container = ({ children }: PropsWithChildren) => {
   return <div className="max-w-7xl mx-auto px-6 md:px-12 xl:px-6">{children}</div>
 }
 
 export const AppHeader = () => {
-  const { status } = useSession()
-  const { connected } = useWallet()
-
   return (
     <header>
       <nav className="z-10 w-full absolute">
@@ -61,7 +56,7 @@ export const AppHeader = () => {
                         dark:shadow-none dark:bg-gray-800 dark:border-gray-700"
             >
               <div className="mt-12 flex gap-4 lg:mt-0">
-                <LoginButton />
+                <LandingConnectWallet />
               </div>
             </div>
           </div>

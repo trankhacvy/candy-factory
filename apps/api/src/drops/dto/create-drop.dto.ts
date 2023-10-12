@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 import { Drop } from '../entities/drop.entity';
 
 export class CreateDropDto {
@@ -13,7 +13,15 @@ export class CreateDropDto {
 
   @ApiProperty({ example: 1 })
   @IsNotEmpty()
-  groupId: number;
+  transactionId: number;
+
+  @ApiProperty({ example: 1 })
+  @IsOptional()
+  groupId?: number;
+
+  @ApiProperty({ name: 'collection' })
+  @IsOptional()
+  collection?: string;
 }
 
 export class CreateDropTxDto {

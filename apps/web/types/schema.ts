@@ -78,19 +78,40 @@ export interface DropTransaction {
   deletedAt: string
 }
 
+export interface Transaction {
+  id: number
+  signature: string
+  amount: number
+  sender: string
+  status: 1 | 2 | 3 | 4
+  user: User
+  drops?: Drop[]
+  userId: number
+  /** @format date-time */
+  createdAt: string
+  /** @format date-time */
+  updatedAt: string
+  /** @format date-time */
+  deletedAt: string
+}
+
 export interface Drop {
   id: number
   name: string
   status: 1 | 2
   nft: NFT
   nftId: number
-  group: AudienceGroup
-  groupId: number
+  group?: AudienceGroup
+  groupId?: number
   transactions: DropTransaction[]
   user: User
   userId: number
   numOfNft: number
   mintedNft: number
+  walletsSource: 1 | 2
+  collection?: string
+  transaction: Transaction
+  transactionId: number
   /** @format date-time */
   createdAt: string
   /** @format date-time */
@@ -280,12 +301,36 @@ export interface CreateDropDto {
   /** @example 1 */
   nftId: number
   /** @example 1 */
-  groupId: number
+  transactionId: number
+  /** @example 1 */
+  groupId?: number
+  collection?: string
+}
+
+export interface EstimatePriceDto {
+  groupId?: number
+  collection?: string
+}
+
+export interface EstimatePriceResponseDto {
+  totalWallets: number
+  price: number
 }
 
 export interface UpdateDropDto {
   /** @example "My awesome drop" */
   name?: string
+}
+
+export interface CreateTransactionDto {
+  signature: string
+  amount: number
+  sender: string
+  status?: 1 | 2 | 3 | 4
+}
+
+export interface UpdateTransactionDto {
+  status?: 1 | 2 | 3 | 4
 }
 
 export interface AuthEmailLoginDto {

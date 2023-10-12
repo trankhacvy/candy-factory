@@ -19,3 +19,5 @@ export const MASTER_TREE = process.env.MASTER_TREE!
 
 // api
 export const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API!
+
+export const MASTER_WALLET = process.env.NEXT_PUBLIC_MASTER_WALLLET!

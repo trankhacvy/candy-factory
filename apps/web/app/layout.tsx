@@ -1,5 +1,6 @@
 import "@/styles/globals.css"
 import { Analytics } from "@vercel/analytics/react"
+import { Poppins } from "next/font/google"
 import { Metadata } from "next"
 import { Toaster } from "@/components/ui/toast"
 import { siteConfig } from "@/config/site"
@@ -35,10 +36,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://writespace.fun"),
 }
 
+const poppins = Poppins({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"] })
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body className={poppins.className}>
         <Providers>
           {children}
           <Analytics />

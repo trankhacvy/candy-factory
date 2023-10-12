@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef } from "react"
 import api from "@/lib/api"
+import { Loader2Icon, LoaderIcon } from "lucide-react"
 
 const WelcomePage = () => {
   const { data: session, update } = useSession()
@@ -36,6 +37,9 @@ const WelcomePage = () => {
           <Typography as="h6" className="mt-6 font-semibold text-center">
             Please wait while we set up your account.
           </Typography>
+          <div className="flex justify-center mt-5">
+            <Loader2Icon className="animate-spin w-10 h-10 text-primary-500" />
+          </div>
         </div>
       </div>
     </div>

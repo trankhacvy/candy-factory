@@ -1,8 +1,11 @@
-import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/typography"
-import { siteConfig } from "@/config/site"
 import { PropsWithChildren } from "react"
 import { AppHeader } from "@/components/landing/header"
+import LandingSignUpButton from "@/components/landing/landing-signup-button"
+import { Badge } from "@/components/ui/badge"
+import { BotIcon, SendIcon, WalletIcon } from "lucide-react"
+import Image from "next/image"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 
 export default function HomePage() {
   return (
@@ -14,7 +17,6 @@ export default function HomePage() {
         <Stats />
         <Testimonials />
         <CallToAction />
-        {/* <Blog /> */}
       </main>
       <AppFooter />
     </>
@@ -112,7 +114,6 @@ const AppFooter = () => {
                       width={16}
                       height={16}
                       fill="currentColor"
-                      // className={5}
                       viewBox="0 0 16 16"
                     >
                       <path d="M8 0a8 8 0 0 0-2.915 15.452c-.07-.633-.134-1.606.027-2.297.146-.625.938-3.977.938-3.977s-.239-.479-.239-1.187c0-1.113.645-1.943 1.448-1.943.682 0 1.012.512 1.012 1.127 0 .686-.437 1.712-.663 2.663-.188.796.4 1.446 1.185 1.446 1.422 0 2.515-1.5 2.515-3.664 0-1.915-1.377-3.254-3.342-3.254-2.276 0-3.612 1.707-3.612 3.471 0 .688.265 1.425.595 1.826a.24.24 0 0 1 .056.23c-.061.252-.196.796-.222.907-.035.146-.116.177-.268.107-1-.465-1.624-1.926-1.624-3.1 0-2.523 1.834-4.84 5.286-4.84 2.775 0 4.932 1.977 4.932 4.62 0 2.757-1.739 4.976-4.151 4.976-.811 0-1.573-.421-1.834-.919l-.498 1.902c-.181.695-.669 1.566-.995 2.097A8 8 0 1 0 8 0z" />
@@ -143,11 +144,9 @@ const AppFooter = () => {
               </ul>
             </div>
             <div className="m-auto mt-16 w-10/12 space-y-6 text-center sm:mt-auto sm:w-5/12 sm:text-left">
+              <span className="block text-gray-500 dark:text-gray-400">The easiest way to airdrop cNFTs at scale</span>
               <span className="block text-gray-500 dark:text-gray-400">
-                We change the way UI components librairies are used
-              </span>
-              <span className="block text-gray-500 dark:text-gray-400">
-                Tailus Blocks © <span id="year" />
+                Candy Factory © <span id="year" />
               </span>
               <span className="flex justify-between text-gray-600 dark:text-white">
                 <a href="#" className="font-medium">
@@ -183,28 +182,34 @@ const HeroSection = () => {
       <Container>
         <div className="relative pt-36 ml-auto">
           <div className="lg:w-2/3 text-center mx-auto">
-            <h1 className="text-gray-900 dark:text-white font-bold text-5xl md:text-6xl xl:text-7xl">
+            <h1 className="text-gray-900 tracking-tight leading-normal dark:text-white font-bold text-5xl md:text-6xl xl:text-7xl">
               The easiest way to airdrop <span className="text-primary-500 dark:text-white">cNFTs</span> at scale
             </h1>
-            <Typography as="p" color="secondary" className="mt-8">
-              <span className="text-primary-500 font-bold">{siteConfig.name}</span> makes it easy to create, airdrop,
-              and manage cNFTs without writing a single line of code.
+            <Typography as="p" color="secondary" className="mt-8 lg:max-w-lg mx-auto">
+              Candy Factory simplifies the process of creating, airdropping, and managing cNFTs, all without the need
+              for any coding.
             </Typography>
             <div className="mt-10 flex flex-wrap justify-center gap-y-4 gap-x-6">
-              <Button size="lg">Sign up now</Button>
+              <div>
+                <LandingSignUpButton />
+              </div>
             </div>
-            <div className="hidden py-8 mt-16 border-y border-gray-500/20 dark:border-gray-800 sm:flex justify-between">
-              <div className="text-left">
+            <div className="hidden py-8 mt-16 border-y border-gray-500/20 dark:border-gray-800 sm:flex justify-between gap-6">
+              <div className="text-center flex-1">
                 <h6 className="text-lg font-semibold text-gray-700 dark:text-white">The lowest price</h6>
-                <p className="mt-2 text-gray-500">Some text here</p>
+                <p className="mt-2 text-gray-600">Airdrop 1,000 cNFTs with only 0.1 SOL</p>
               </div>
-              <div className="text-left">
-                <h6 className="text-lg font-semibold text-gray-700 dark:text-white">The fastest on the market</h6>
-                <p className="mt-2 text-gray-500">Some text here</p>
+              <div className="text-center flex-1">
+                <h6 className="text-lg font-semibold text-gray-700 dark:text-white">No Code</h6>
+                <p className="mt-2 text-gray-600">
+                  Easy to launch your NFT airdrop without writing a single line of code.
+                </p>
               </div>
-              <div className="text-left">
-                <h6 className="text-lg font-semibold text-gray-700 dark:text-white">The most loved</h6>
-                <p className="mt-2 text-gray-500">Some text here</p>
+              <div className="text-center flex-1">
+                <h6 className="text-lg font-semibold text-gray-700 dark:text-white">Powerful SDKs</h6>
+                <p className="mt-2 text-gray-500">
+                  Easily integrate the airdrop API and wallet management API into your business workflow.
+                </p>
               </div>
             </div>
           </div>
@@ -285,7 +290,7 @@ const Features = () => {
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="w-6 h-6 text-secondary"
+            className="w-6 h-6 text-primary-500"
           >
             <path
               fillRule="evenodd"
@@ -293,31 +298,61 @@ const Features = () => {
               clipRule="evenodd"
             />
           </svg>
-          <h2 className="my-8 text-2xl font-bold text-gray-900 dark:text-white md:text-4xl">
-            A technology-first approach to payments and finance
+          <h2 className="my-8 text-2xl font-bold text-slate-900 leading-relaxed dark:text-white md:text-4xl">
+            Everything you need for launching a cNFT airdrop
           </h2>
-          <Typography color="secondary" className="dark:text-gray-300">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus ad ipsum pariatur autem, fugit laborum in
-            atque amet obcaecati? Nisi minima aspernatur, quidem nulla cupiditate nam consequatur eligendi magni
-            adipisci.
+          <Typography color="secondary">
+            Our best-in-class tools provide all the features you need to successfully launch a cNFT airdrop.
           </Typography>
         </div>
         <div className="mt-16 grid divide-x divide-y divide-gray-100 dark:divide-gray-700 overflow-hidden rounded-3xl border border-gray-500/20 text-gray-600 dark:border-gray-700 sm:grid-cols-2 lg:grid-cols-4 lg:divide-y-0 xl:grid-cols-4">
           <div className="group relative bg-white dark:bg-gray-800 transition hover:z-[1] hover:shadow-z16 hover:shadow-gray-600/10">
             <div className="relative space-y-8 py-12 p-8">
               <img
-                src="https://cdn-icons-png.flaticon.com/512/4341/4341139.png"
+                src="https://cdn-icons-png.flaticon.com/512/1495/1495118.png"
                 className="w-12"
                 width={512}
                 height={512}
-                alt="burger illustration"
+                alt="low price"
               />
               <div className="space-y-2">
                 <h5 className="text-xl font-semibold text-gray-900 dark:text-white transition group-hover:text-primary-500">
-                  First feature
+                  The lowest price
+                </h5>
+                <p className="text-slate-600 dark:text-gray-300">Airdrop 1,000 cNFTs with only 0.1 SOL.</p>
+              </div>
+              <a href="#" className="flex items-center justify-between group-hover:text-primary-500">
+                <span className="text-sm">Read more</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-5 h-5 -translate-x-4 text-2xl opacity-0 transition duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M12.97 3.97a.75.75 0 011.06 0l7.5 7.5a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 11-1.06-1.06l6.22-6.22H3a.75.75 0 010-1.5h16.19l-6.22-6.22a.75.75 0 010-1.06z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div className="group relative bg-white dark:bg-gray-800 transition hover:z-[1] hover:shadow-z16 hover:shadow-gray-600/10">
+            <div className="relative space-y-8 py-12 p-8">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/6214/6214224.png"
+                className="w-12"
+                width={512}
+                height={512}
+                alt="No code"
+              />
+              <div className="space-y-2">
+                <h5 className="text-xl font-semibold text-gray-700 dark:text-white transition group-hover:text-primary-500">
+                  No Code
                 </h5>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Neque Dolor, fugiat non cum doloribus aperiam voluptates nostrum.
+                  Easy to launch your NFT airdrop without writing a single line of code.
                 </p>
               </div>
               <a href="#" className="flex items-center justify-between group-hover:text-primary-500">
@@ -340,52 +375,18 @@ const Features = () => {
           <div className="group relative bg-white dark:bg-gray-800 transition hover:z-[1] hover:shadow-z16 hover:shadow-gray-600/10">
             <div className="relative space-y-8 py-12 p-8">
               <img
-                src="https://cdn-icons-png.flaticon.com/512/4341/4341134.png"
+                src="https://cdn-icons-png.flaticon.com/512/2323/2323800.png"
                 className="w-12"
                 width={512}
                 height={512}
-                alt="burger illustration"
+                alt="Airdrop analytics"
               />
               <div className="space-y-2">
                 <h5 className="text-xl font-semibold text-gray-700 dark:text-white transition group-hover:text-primary-500">
-                  Second feature
+                  Airdrop analytics
                 </h5>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Neque Dolor, fugiat non cum doloribus aperiam voluptates nostrum.
-                </p>
-              </div>
-              <a href="#" className="flex items-center justify-between group-hover:text-primary-500">
-                <span className="text-sm">Read more</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-5 h-5 -translate-x-4 text-2xl opacity-0 transition duration-300 group-hover:translate-x-0 group-hover:opacity-100"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.97 3.97a.75.75 0 011.06 0l7.5 7.5a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 11-1.06-1.06l6.22-6.22H3a.75.75 0 010-1.5h16.19l-6.22-6.22a.75.75 0 010-1.06z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </a>
-            </div>
-          </div>
-          <div className="group relative bg-white dark:bg-gray-800 transition hover:z-[1] hover:shadow-z16 hover:shadow-gray-600/10">
-            <div className="relative space-y-8 py-12 p-8">
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/4341/4341160.png"
-                className="w-12"
-                width={512}
-                height={512}
-                alt="burger illustration"
-              />
-              <div className="space-y-2">
-                <h5 className="text-xl font-semibold text-gray-700 dark:text-white transition group-hover:text-primary-500">
-                  Third feature
-                </h5>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Neque Dolor, fugiat non cum doloribus aperiam voluptates nostrum.
+                  Keep track of your airdrops over time, know exactly which wallets recieved your airdrop.
                 </p>
               </div>
               <a href="#" className="flex items-center justify-between group-hover:text-primary-500">
@@ -408,18 +409,18 @@ const Features = () => {
           <div className="group relative bg-gray-50 dark:bg-gray-900 transition hover:z-[1] hover:shadow-z16 hover:shadow-gray-600/10">
             <div className="relative space-y-8 py-12 p-8 transition duration-300 group-hover:bg-white dark:group-hover:bg-gray-800">
               <img
-                src="https://cdn-icons-png.flaticon.com/512/4341/4341025.png"
+                src="https://cdn-icons-png.flaticon.com/512/2921/2921201.png"
                 className="w-12"
                 width={512}
                 height={512}
-                alt="burger illustration"
+                alt="Generate a snapshot of token holders."
               />
               <div className="space-y-2">
                 <h5 className="text-xl font-semibold text-gray-700 dark:text-white transition group-hover:text-primary-500">
-                  More features
+                  Generate a snapshot of token holders.
                 </h5>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Neque Dolor, fugiat non cum doloribus aperiam voluptates nostrum.
+                  Easily create a snapshot of token holders based on the collection.
                 </p>
               </div>
               <a href="#" className="flex items-center justify-between group-hover:text-primary-500">
@@ -453,7 +454,7 @@ const Stats = () => {
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          className="w-6 h-6 text-sky-500"
+          className="w-6 h-6 text-primary-500"
         >
           <path
             fillRule="evenodd"
@@ -467,65 +468,58 @@ const Stats = () => {
           />
         </svg>
         <div className="space-y-6 justify-between text-gray-600 md:flex flex-row-reverse md:gap-6 md:space-y-0 lg:gap-12 lg:items-center">
-          <div className="md:5/12 lg:w-1/2">
-            <img
-              src="https://astrolus.netlify.app/images/pie.svg"
-              alt="image"
-              loading="lazy"
-              width=""
-              height=""
-              className="w-full"
-            />
+          <div className="relative flex md:5/12 lg:w-1/2">
+            <div className="flex w-full justify-end mt-[-20%]">
+              <div className="w-2/3">
+                <AspectRatio>
+                  <Image src="/assets/sdk.png" alt="image" fill />
+                </AspectRatio>
+              </div>
+            </div>
+            <div className="absolute z-[-1] w-2/3 top-[60%]">
+              <img src="/assets/signup-form.jpg" alt="image" loading="lazy" width="" height="" className="w-full" />
+            </div>
           </div>
           <div className="md:7/12 lg:w-1/2">
-            <h2 className="text-3xl font-bold text-gray-900 md:text-4xl dark:text-white">
-              Nuxt development is carried out by passionate developers
-            </h2>
+            <div className="flex items-start flex-col gap-2">
+              <Badge variant="info">Coming soon</Badge>
+              <h2 className="text-3xl font-bold text-gray-900 md:text-4xl dark:text-white">Easy and powerful SDKs</h2>
+            </div>
             <Typography as="p" className="my-8 dark:text-gray-300" color="secondary">
-              Nobis minus voluptatibus pariatur dignissimos libero quaerat iure expedita at? Asperiores nemo possimus
-              nesciunt dicta veniam aspernatur quam mollitia. <br /> <br /> Vitae error, quaerat officia delectus
-              voluptatibus explicabo quo pariatur impedit, at reprehenderit aliquam a ipsum quas voluptatem. Quo
-              pariatur asperiores eum amet.
+              Easily integrate the airdrop API and wallet management API into your business workflow.
             </Typography>
-            <div className="divide-y space-y-4 divide-gray-100 dark:divide-gray-800">
-              <div className="mt-8 flex gap-4 md:items-center">
+            <div className="divide-y space-y-8 divide-gray-100 dark:divide-gray-800">
+              <div className="flex gap-4 md:items-center">
                 <div className="w-12 h-12 flex gap-4 rounded-full bg-indigo-100 dark:bg-indigo-900/20">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="w-6 h-6 m-auto text-indigo-500 dark:text-indigo-400"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.02c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97zM6.75 8.25a.75.75 0 01.75-.75h9a.75.75 0 010 1.5h-9a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5H12a.75.75 0 000-1.5H7.5z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <BotIcon className="w-6 h-6 m-auto text-indigo-500" />
                 </div>
                 <div className="w-5/6">
-                  <h4 className="font-semibold text-lg text-gray-700 dark:text-indigo-300">Chat Anytime</h4>
-                  <p className="text-gray-500 dark:text-gray-400">Asperiores nemo possimus nesciunt quam mollitia.</p>
+                  <h4 className="font-semibold text-lg text-gray-700 dark:text-indigo-300">Automation</h4>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Automatically airdrop the cool NFT to new signup users.
+                  </p>
                 </div>
               </div>
-              <div className="pt-4 flex gap-4 md:items-center">
-                <div className="w-12 h-12 flex gap-4 rounded-full bg-teal-100 dark:bg-teal-900/20">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="w-6 h-6 m-auto text-teal-600 dark:text-teal-400"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+
+              <div className="flex gap-4 md:items-center">
+                <div className="w-12 h-12 flex gap-4 rounded-full bg-indigo-100 dark:bg-indigo-900/20">
+                  <SendIcon className="w-6 h-6 m-auto text-indigo-500 dark:text-indigo-400" />
                 </div>
                 <div className="w-5/6">
-                  <h4 className="font-semibold text-lg text-gray-700 dark:text-teal-300">Real Time Location</h4>
-                  <p className="text-gray-500 dark:text-gray-400">Asperiores nemo possimus nesciunt quam mollitia.</p>
+                  <h4 className="font-semibold text-lg text-gray-700 dark:text-indigo-300">
+                    Using cNFTs as a marketing tool
+                  </h4>
+                  <p className="text-gray-500 dark:text-gray-400">Airdrop cNFTs as newsletters to your customers</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 md:items-center">
+                <div className="w-12 h-12 flex gap-4 rounded-full bg-teal-100 dark:bg-teal-900/20">
+                  <WalletIcon className="w-6 h-6 m-auto text-teal-600 dark:text-teal-400" />
+                </div>
+                <div className="w-5/6">
+                  <h4 className="font-semibold text-lg text-gray-700 dark:text-teal-300">Signup Form</h4>
+                  <p className="text-gray-500 dark:text-gray-400">Collect user wallets through the signup form.</p>
                 </div>
               </div>
             </div>
@@ -550,7 +544,7 @@ const Testimonials = () => {
             <div className="flex gap-4">
               <img
                 className="w-12 h-12 rounded-full"
-                src="https://astrolus.netlify.app/images/avatars/avatar.webp"
+                src="/assets/avatar1.png"
                 alt="user avatar"
                 width={400}
                 height={400}
@@ -562,17 +556,15 @@ const Testimonials = () => {
               </div>
             </div>
             <p className="mt-8">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Illum aliquid quo eum quae quos illo earum ipsa
-              doloribus nostrum minus libero aspernatur laborum cum, a suscipit, ratione ea totam ullam! Lorem ipsum
-              dolor sit amet consectetur, adipisicing elit. Architecto laboriosam deleniti aperiam ab veniam sint non
-              cumque quis tempore cupiditate. Sint libero voluptas veniam at reprehenderit, veritatis harum et rerum.
+              Candy Factory has been a game-changer for us. With their tool, we airdropped 1,000 cNFTs for just 0.1 SOL,
+              saving us time and money. It's a must-have for any cNFT project!
             </p>
           </div>
           <div className="aspect-auto p-8 border border-gray-100 rounded-3xl bg-white dark:bg-gray-800 dark:border-gray-700 shadow-2xl shadow-gray-600/10 dark:shadow-none">
             <div className="flex gap-4">
               <img
                 className="w-12 h-12 rounded-full"
-                src="https://astrolus.netlify.app/images/avatars/avatar.webp"
+                src="/assets/avatar2.png"
                 alt="user avatar"
                 width={200}
                 height={200}
@@ -584,16 +576,15 @@ const Testimonials = () => {
               </div>
             </div>
             <p className="mt-8">
-              {" "}
-              Lorem ipsum dolor laboriosam deleniti aperiam ab veniam sint non cumque quis tempore cupiditate. Sint
-              libero voluptas veniam at reprehenderit, veritatis harum et rerum.
+              As a non-techie, I was amazed at how easy it was to use Candy Factory. I launched my cNFT airdrop without
+              any coding. It's user-friendly and efficient!"
             </p>
           </div>
           <div className="aspect-auto p-8 border border-gray-100 rounded-3xl bg-white dark:bg-gray-800 dark:border-gray-700 shadow-2xl shadow-gray-600/10 dark:shadow-none">
             <div className="flex gap-4">
               <img
                 className="w-12 h-12 rounded-full"
-                src="https://astrolus.netlify.app/images/avatars/avatar.webp"
+                src="/assets/avatar3.png"
                 alt="user avatar"
                 width={200}
                 height={200}
@@ -605,16 +596,15 @@ const Testimonials = () => {
               </div>
             </div>
             <p className="mt-8">
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Architecto laboriosam deleniti aperiam ab veniam
-              sint non cumque quis tempore cupiditate. Sint libero voluptas veniam at reprehenderit, veritatis harum et
-              rerum.
+              The airdrop analytics from Candy Factory have been invaluable. I can now track our airdrops over time and
+              identify which wallets received our airdrops. It's a game-changer for our sNFT project.
             </p>
           </div>
           <div className="aspect-auto p-8 border border-gray-100 rounded-3xl bg-white dark:bg-gray-800 dark:border-gray-700 shadow-2xl shadow-gray-600/10 dark:shadow-none">
             <div className="flex gap-4">
               <img
                 className="w-12 h-12 rounded-full"
-                src="https://astrolus.netlify.app/images/avatars/avatar.webp"
+                src="/assets/avatar4.png"
                 alt="user avatar"
                 width={200}
                 height={200}
@@ -626,16 +616,15 @@ const Testimonials = () => {
               </div>
             </div>
             <p className="mt-8">
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Architecto laboriosam deleniti aperiam ab veniam
-              sint non cumque quis tempore cupiditate. Sint libero voluptas veniam at reprehenderit, veritatis harum et
-              rerum.
+              Generating snapshots of token holders based on collections has never been easier. Candy Factory simplifies
+              the process, making it a breeze to manage our NFT community.
             </p>
           </div>
           <div className="aspect-auto p-8 border border-gray-100 rounded-3xl bg-white dark:bg-gray-800 dark:border-gray-700 shadow-2xl shadow-gray-600/10 dark:shadow-none">
             <div className="flex gap-4">
               <img
                 className="w-12 h-12 rounded-full"
-                src="https://astrolus.netlify.app/images/avatars/avatar.webp"
+                src="/assets/avatar5.png"
                 alt="user avatar"
                 width={200}
                 height={200}
@@ -647,17 +636,15 @@ const Testimonials = () => {
               </div>
             </div>
             <p className="mt-8">
-              {" "}
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Architecto laboriosam deleniti aperiam ab veniam
-              sint non cumque quis tempore cupiditate. Sint libero voluptas veniam at reprehenderit, veritatis harum et
-              rerum.
+              Candy Factory's SDKs are a godsend for our business. We seamlessly integrated the airdrop API and wallet
+              management API into our workflow. It's powerful and hassle-free!
             </p>
           </div>
           <div className="aspect-auto p-8 border border-gray-100 rounded-3xl bg-white dark:bg-gray-800 dark:border-gray-700 shadow-2xl shadow-gray-600/10 dark:shadow-none">
             <div className="flex gap-4">
               <img
                 className="w-12 h-12 rounded-full"
-                src="https://astrolus.netlify.app/images/avatars/avatar.webp"
+                src="/assets/avatar6.png"
                 alt="user avatar"
                 width={400}
                 height={400}
@@ -669,9 +656,8 @@ const Testimonials = () => {
               </div>
             </div>
             <p className="mt-8">
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Architecto laboriosam deleniti aperiam ab veniam
-              sint non cumque quis tempore cupiditate. Sint libero voluptas veniam at reprehenderit, veritatis harum et
-              rerum.
+              If you're looking for an cNFT airdrop tool that's cost-effective, user-friendly, and offers powerful
+              analytics, Candy Factory is the solution. It's transformed the way we handle cNFT distribution.
             </p>
           </div>
         </div>
@@ -697,7 +683,7 @@ const CallToAction = () => {
               loading="lazy"
               width={400}
               height={400}
-              src="https://astrolus.netlify.app/images/avatars/avatar.webp"
+              src="/assets/avatar5.png"
               alt="member photo"
               className="h-8 w-8 rounded-full object-cover"
             />
@@ -705,7 +691,7 @@ const CallToAction = () => {
               loading="lazy"
               width={200}
               height={200}
-              src="https://astrolus.netlify.app/images/avatars/avatar-1.webp"
+              src="/assets/avatar4.png"
               alt="member photo"
               className="h-12 w-12 rounded-full object-cover"
             />
@@ -713,7 +699,7 @@ const CallToAction = () => {
               loading="lazy"
               width={200}
               height={200}
-              src="https://astrolus.netlify.app/images/avatars/avatar-2.webp"
+              src="/assets/avatar3.png"
               alt="member photo"
               className="z-10 h-16 w-16 rounded-full object-cover"
             />
@@ -721,7 +707,7 @@ const CallToAction = () => {
               loading="lazy"
               width={200}
               height={200}
-              src="https://astrolus.netlify.app/images/avatars/avatar-3.webp"
+              src="/assets/avatar2.png"
               alt="member photo"
               className="relative h-12 w-12 rounded-full object-cover"
             />
@@ -729,7 +715,7 @@ const CallToAction = () => {
               loading="lazy"
               width={200}
               height={200}
-              src="https://astrolus.netlify.app/images/avatars/avatar-4.webp"
+              src="/assets/avatar1.png"
               alt="member photo"
               className="h-8 w-8 rounded-full object-cover"
             />
@@ -739,10 +725,10 @@ const CallToAction = () => {
               Get Started now
             </h1>
             <p className="text-center text-xl text-gray-600 dark:text-gray-300">
-              Be part of millions people around the world using tailus in modern User Interfaces.
+              Start launching your NFT airdrop today with Candy Factory
             </p>
             <div className="flex flex-wrap justify-center gap-6">
-              <Button size="lg">Get Started</Button>
+              <LandingSignUpButton />
             </div>
           </div>
         </div>
