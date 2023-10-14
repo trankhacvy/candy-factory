@@ -8,7 +8,11 @@ export function useFetchDropTxs(id?: string, request?: PageOptionRequest, refres
 
   return useSWR(
     session && id ? ["fetch-drops-tx", id, request?.page ?? ""] : null,
-    () => api.withToken(session?.accessToken).getDropTransactions(id!, request),
+    () =>
+      api.withToken(session?.accessToken).getDropTransactions(id!, {
+        ...request,
+        order: "ASC",
+      }),
     {
       refreshInterval: refresh ? 2000 : 0,
       keepPreviousData: true,

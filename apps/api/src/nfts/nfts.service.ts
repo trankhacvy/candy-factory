@@ -7,14 +7,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeepPartial,
   FindOptionsOrder,
-  ILike,
-  Like,
   Raw,
   Repository,
 } from 'typeorm';
 import { NFT } from './entities/nft.entity';
 import { CreateNFTDto } from './dto/create-nft.dto';
-import { IPaginationOptions } from 'src/utils/types/pagination-options';
 import { EntityCondition } from 'src/utils/types/entity-condition.type';
 import { StorageService } from 'src/shared/services/storage-service';
 import { ConnectionService } from 'src/shared/services/connection-service';

@@ -9,6 +9,7 @@ import {
   EstimatePriceDto,
   EstimatePriceResponseDto,
   NFT,
+  StatDto,
   Transaction,
 } from "@/types/schema"
 import qs from "query-string"
@@ -174,6 +175,13 @@ class Api {
 
   public getTransactions(request: PageOptionRequest = {}) {
     return fetcher<BaseResponse<BaseListResponseV2<Transaction>>>(`${BASE_URL}/transactions?${qs.stringify(request)}`, {
+      headers: this.headers,
+    })
+  }
+
+  // stats
+  public getStat() {
+    return fetcher<BaseResponse<StatDto>>(`${BASE_URL}/stat`, {
       headers: this.headers,
     })
   }

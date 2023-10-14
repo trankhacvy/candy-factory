@@ -1,12 +1,13 @@
 "use client"
 
 import { DropTransactions } from "@/components/drops/drop-transactions"
+import { Alert, AlertDescription, AlertIcon } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { IconButton } from "@/components/ui/icon-button"
 import { Typography } from "@/components/ui/typography"
 import { useFetchDrop } from "@/hooks/use-fetch-drops"
 import dayjs from "dayjs"
-import { ChevronLeftIcon, Loader2Icon } from "lucide-react"
+import { AlertCircleIcon, ChevronLeftIcon, Loader2Icon } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
@@ -45,6 +46,20 @@ export default function DropDetail() {
           </div>
         </div>
       </div>
+
+      {!isFinished && (
+        <Alert variant="info">
+          <AlertIcon>
+            <AlertCircleIcon />
+          </AlertIcon>
+          <div>
+            <AlertDescription>
+              The airdrop process is currently in progress. The duration of completion will depend on the number of
+              wallets involved. You are welcome to close the page and return later.
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
 
       <DropTransactions drop={drop} />
     </div>

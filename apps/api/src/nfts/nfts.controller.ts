@@ -1,13 +1,11 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -16,12 +14,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { NFTsService } from './nfts.service';
-import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateNFTDto } from './dto/create-nft.dto';
 import { NFT } from './entities/nft.entity';
-import { InfinityPaginationResultType } from 'src/utils/types/infinity-pagination-result.type';
-import { infinityPagination } from 'src/utils/infinity-pagination';
 import { UpdateNFTDto } from './dto/update-nft.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthUser } from 'src/utils/decorators/auth-user.decorator';

@@ -337,3 +337,9 @@ export interface AuthEmailLoginDto {
   /** @example "63EEC9FfGyksm7PkVC6z8uAmqozbQcTzbkWJNsgqjkFs" */
   wallet: string
 }
+
+export interface StatDto {
+  totalDrop: number
+  totalAirdropedNft: number
+  totalWallets: number
+}

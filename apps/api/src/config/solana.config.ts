@@ -42,6 +42,6 @@ export default registerAs<SolanaConfig>('solana', () => {
     // pricing
     nftPrice: process.env.NFT_PRICE
       ? parseFloat(process.env.NFT_PRICE)
-      : 0.0001,
+      : 0.00005,
   };
 });

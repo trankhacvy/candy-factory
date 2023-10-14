@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
-import { XIcon } from "lucide-react"
+import { XIcon, AlertTriangleIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useForm, useFormContext } from "react-hook-form"
@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Alert, AlertDescription, AlertIcon, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useFetchNFTs } from "@/hooks/use-fetch-nfts"
@@ -383,9 +384,23 @@ const ReviewStep = ({ setIsOpen }: any) => {
         {isLoading ? (
           <Skeleton className="w-20 h-4 rounded-md" />
         ) : (
-          <Typography className="font-semibold">{data?.data?.price}</Typography>
+          <Typography className="font-semibold flex gap-2">
+            <SolanaIcon /> {data?.data?.price}
+          </Typography>
         )}
       </div>
+
+      <Alert variant="warning">
+        <AlertIcon>
+          <AlertTriangleIcon />
+        </AlertIcon>
+        <div>
+          <AlertDescription>
+            Please review the details of your drop before creating it. You will be asked to pay a transaction fee to
+            create the airdrop.
+          </AlertDescription>
+        </div>
+      </Alert>
 
       {publicKey ? (
         <Button onClick={onSubmit} loading={loading} disabled={isLoading || loading} type="submit" fullWidth>
@@ -397,3 +412,14 @@ const ReviewStep = ({ setIsOpen }: any) => {
     </div>
   )
 }
+
+const SolanaIcon = () => (
+  <svg viewBox="0 0 32 32" focusable="false" className="w-5 h-5">
+    <path
+      fill="currentColor"
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M22.0273 11.75H7.18487C7.14817 11.7495 7.11243 11.7382 7.08208 11.7176C7.05172 11.6969 7.0281 11.6678 7.01412 11.6339C7.00015 11.6 6.99644 11.5627 7.00346 11.5266C7.01048 11.4906 7.02792 11.4574 7.05362 11.4312L10.3161 8.165C10.4233 8.05994 10.5672 8.00076 10.7173 8H25.5598C25.5965 8.00052 25.6322 8.01179 25.6626 8.03243C25.6929 8.05306 25.7165 8.08215 25.7305 8.11609C25.7445 8.15003 25.7482 8.18732 25.7412 8.22335C25.7342 8.25937 25.7167 8.29254 25.691 8.31875L22.4285 11.585C22.3213 11.69 22.1774 11.7492 22.0273 11.75ZM22.0273 23.0002H7.18487C7.14817 22.9997 7.11243 22.9884 7.08208 22.9678C7.05172 22.9472 7.0281 22.9181 7.01412 22.8841C7.00015 22.8502 6.99644 22.8129 7.00346 22.7769C7.01048 22.7409 7.02792 22.7077 7.05362 22.6815L10.3161 19.4152C10.4233 19.3102 10.5672 19.251 10.7173 19.2502H25.5598C25.5965 19.2508 25.6322 19.262 25.6626 19.2827C25.6929 19.3033 25.7165 19.3324 25.7305 19.3663C25.7445 19.4003 25.7482 19.4376 25.7412 19.4736C25.7342 19.5096 25.7167 19.5428 25.691 19.569L22.4285 22.8352C22.3213 22.9403 22.1774 22.9995 22.0273 23.0002ZM25.5598 17.375H10.7173C10.5672 17.3742 10.4233 17.315 10.3161 17.21L7.05362 13.9437C7.02792 13.9175 7.01048 13.8844 7.00346 13.8483C6.99644 13.8123 7.00015 13.775 7.01412 13.7411C7.0281 13.7072 7.05172 13.6781 7.08208 13.6574C7.11243 13.6368 7.14817 13.6255 7.18487 13.625H22.0273C22.1774 13.6258 22.3213 13.6849 22.4285 13.79L25.691 17.0562C25.7167 17.0824 25.7342 17.1156 25.7412 17.1516C25.7482 17.1877 25.7445 17.225 25.7305 17.2589C25.7165 17.2928 25.6929 17.3219 25.6626 17.3426C25.6322 17.3632 25.5965 17.3745 25.5598 17.375Z"
+    ></path>
+  </svg>
+)

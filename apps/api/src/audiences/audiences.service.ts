@@ -11,6 +11,7 @@ import { AudienceGroup } from 'src/audience-groups/entities/audience-group.entit
 import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 import { PageMetaDto } from 'src/utils/dtos/page-meta.dto';
 import { PageDto } from 'src/utils/dtos/page.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AudiencesService {
@@ -111,5 +112,17 @@ export class AudiencesService {
     });
 
     return new PageDto(result, pageMetaDto);
+  }
+
+  async getTotalWallet(user: User): Promise<number> {
+    const result = await this.audiencesRepository.findAndCount({
+      where: {
+        group: {
+          userId: user.id,
+        },
+      },
+    });
+
+    return result[1];
   }
 }

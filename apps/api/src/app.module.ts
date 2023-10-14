@@ -17,6 +17,7 @@ import { NFTsModule } from './nfts/nfts.module';
 import { DropsModule } from './drops/drops.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { SharedModule } from './shared/shared.module';
+import { StatModule } from './stats/StatsModule';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformInterceptor } from './utils/interceptors/response-transform.interceptor';
 import { BullModule } from '@nestjs/bull';
@@ -46,6 +47,7 @@ import redisConfig from './config/redis.config';
     TransactionsModule,
     SharedModule,
     AuthModule,
+    StatModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService<AllConfigType>) => {

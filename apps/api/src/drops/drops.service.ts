@@ -286,6 +286,18 @@ export class DropsService {
     return new PageDto(result, pageMetaDto);
   }
 
+  async getTotalAirdropedNFT(user: User): Promise<number> {
+    const result = await this.dropTxsRepository.findAndCount({
+      where: {
+        drop: {
+          userId: user.id,
+        },
+      },
+    });
+
+    return result[1];
+  }
+
   async createBulkDropTxs(drop: Drop, wallets: string[]): Promise<boolean> {
     const currentJob = await this.airdropQueue.getActiveCount();
     console.log('===================? :', currentJob);

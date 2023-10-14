@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { XIcon } from "lucide-react"
+import { AlertTriangleIcon, XIcon } from "lucide-react"
 import CSVReader from "react-csv-reader"
 import { useForm, useFormContext } from "react-hook-form"
 import { mutate } from "swr"
@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { validateSolanaPublicKeys } from "@/utils/keypair"
 import ConnectWalletButton from "../connect-wallet-button"
 import { IconButton } from "../ui/icon-button"
@@ -29,6 +29,7 @@ import { Typography } from "../ui/typography"
 import { useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { useRouter } from "next/navigation"
+import { Alert, AlertDescription, AlertIcon } from "../ui/alert"
 
 type NewAddressesGroupModalProps = {
   trigger: React.ReactNode
@@ -272,15 +273,24 @@ const UploadCSVTab = () => {
           )}
           <FormMessage />
 
-          <FormDescription className="bg-warning-500/16  px-4 py-2.5 rounded-lg mt-4">
-            <Typography as="p" color="warning" level="body4" className="text-warning-700 mb-5">
-              Upload a CSV. The first row should be the headers of the table, and your headers should not include any
-              special characters other than hyphens (<code>-</code>) or underscores(<code>_</code>)
-            </Typography>
-            <a className="text-warning-700 font-semibold underline" href="/">
-              Sample file
-            </a>
-          </FormDescription>
+          <Alert className="mt-5" variant="warning">
+            <AlertIcon>
+              <AlertTriangleIcon />
+            </AlertIcon>
+            <div>
+              <AlertDescription>
+                Upload a CSV. The first row should be the headers of the table, and your headers should not include any
+                special characters other than hyphens (<code>-</code>) or underscores(<code>_</code>)
+                <a
+                  className="font-semibold underline block"
+                  href="https://gist.githubusercontent.com/trankhacvy/ddf5cc9aa3085873e9324ca728b43372/raw/7b728e01ef06c5d3d935b5eb49f19fafcdb6f769/SampleWallet.csv"
+                  target="_blank"
+                >
+                  Sample file
+                </a>
+              </AlertDescription>
+            </div>
+          </Alert>
         </FormItem>
       )}
     />
