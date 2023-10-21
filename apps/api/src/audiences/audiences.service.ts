@@ -34,13 +34,9 @@ export class AudiencesService {
   }
 
   async bulkCreate(dto: CreateAudienceDto[]): Promise<Audience[]> {
-    console.log('check dto', dto);
     const group = await this.audienceGroupsService.findOne({
       id: dto[0].groupId,
     });
-
-    console.log('check group', group);
-    console.log('check dto', dto);
 
     return this.audiencesRepository.save(
       this.audiencesRepository.create(

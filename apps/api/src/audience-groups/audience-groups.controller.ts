@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   FileTypeValidator,
   Get,
@@ -10,7 +9,6 @@ import {
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -34,8 +32,6 @@ import {
   CreateAudienceGroupWithCsvDto,
 } from './dto/create-group.dto';
 import { AudienceGroup } from './entities/audience-group.entity';
-import { InfinityPaginationResultType } from 'src/utils/types/infinity-pagination-result.type';
-import { infinityPagination } from 'src/utils/infinity-pagination';
 import { UpdateAudienceGroupDto } from './dto/update-group.dto';
 import { NullableType } from 'src/utils/types/nullable.type';
 import { AuthUser } from 'src/utils/decorators/auth-user.decorator';

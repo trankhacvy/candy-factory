@@ -27,6 +27,8 @@ import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 import { PageDto } from 'src/utils/dtos/page.dto';
 import { CollectionService } from 'src/shared/services/collection-service';
 import { PageMetaDto } from 'src/utils/dtos/page-meta.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class AudienceGroupsService {
@@ -36,6 +38,7 @@ export class AudienceGroupsService {
     @Inject(forwardRef(() => AudiencesService))
     private audiencesService: AudiencesService,
     private collectionService: CollectionService,
+    @InjectQueue('wallets-group') private readonly walletsGroupQueue: Queue,
   ) {}
 
   async create(
@@ -106,24 +109,21 @@ export class AudienceGroupsService {
     user: User,
   ): Promise<AudienceGroup> {
     try {
-      const wallets = await this.collectionService.loadHoldersOfCollection(
-        dto.collection,
-      );
-
       const group = await this.audienceGroupsRepository.save(
         this.audienceGroupsRepository.create({
           ...dto,
-          numOfAudience: wallets.length,
+          numOfAudience: 0,
           user,
         }),
       );
 
-      await this.audiencesService.bulkCreate(
-        wallets.map((record) => ({
-          wallet: record.address,
-          groupId: group.id,
-        })),
-      );
+      this.walletsGroupQueue.add({
+        type: 'load-collection-holders',
+        payload: {
+          group,
+          collection: dto.collection,
+        },
+      });
 
       return group;
     } catch (error: any) {
