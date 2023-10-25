@@ -6,7 +6,6 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -41,6 +40,9 @@ export class NFT extends EntityHelper {
   @Column({ type: String, nullable: true })
   externalUrl?: string;
 
+  @Column({ type: Boolean, name: 'is_collection', default: false })
+  isCollection: boolean;
+
   @Column({
     type: 'jsonb',
     array: false,
@@ -52,33 +54,7 @@ export class NFT extends EntityHelper {
 
   @Column({ type: String, nullable: true })
   @IsOptional()
-  creator?: string;
-
-  @Column({ type: String, nullable: true })
-  @MaxLength(32)
-  @IsOptional()
-  collectionName?: string;
-
-  @Column({ type: String, nullable: true })
-  @MaxLength(200)
-  @IsOptional()
-  collectionDescription?: string;
-
-  @Column({ type: String, nullable: true })
-  @MaxLength(10)
-  @IsOptional()
-  collectionSymbol?: string;
-
-  @Column({ type: String, nullable: true })
-  @IsOptional()
-  collectionImage?: string;
-
-  @Column({ type: String, nullable: true })
-  @IsOptional()
-  collectionMetadataUri?: string;
-
-  @Column({ type: String, nullable: true })
-  collectionExternalUrl?: string;
+  creators?: Array<{ creator: string; share: number }>;
 
   @OneToMany(() => Drop, (drop) => drop.nft)
   drops?: Drop[];
@@ -92,6 +68,27 @@ export class NFT extends EntityHelper {
 
   @Column({ type: 'int8', name: 'user_id' })
   userId!: number;
+
+  @Column({ nullable: true, name: 'collection_id' })
+  public collectionId?: number;
+
+  @ManyToOne(() => NFT, (nft) => nft.id)
+  @JoinColumn({ name: 'collection_id' })
+  public collection?: NFT;
+
+  @Column({ nullable: true, unique: true, name: 'nft_address' })
+  public collectionAddress?: string;
+
+  @Column({
+    type: 'jsonb',
+    array: false,
+    default: () => "'{}'",
+    nullable: true,
+  })
+  public collectionKeys?: Record<string, string>;
+
+  // @Column({ type: Number, default: 0 })
+  // royalty: number;
 
   @CreateDateColumn()
   createdAt: Date;

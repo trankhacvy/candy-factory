@@ -1,3 +1,5 @@
+import { BaseResponse } from "@/types"
+
 export class FetcherError extends Error {
   public statusCode: number
   public res: Response
@@ -18,6 +20,11 @@ export default async function fetcher<JSON = any>(input: RequestInfo, init?: Req
       cache: "no-store",
     })
     if (res.ok) {
+      if (res.status === 204) {
+        return {
+          statusCode: 204,
+        } as JSON
+      }
       return (await res.json()) as JSON
     }
 

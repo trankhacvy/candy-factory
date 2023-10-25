@@ -16,6 +16,9 @@ import { Uploader } from "@/components/ui/uploader"
 import { Typography } from "../ui/typography"
 import { useSession } from "next-auth/react"
 import api from "@/lib/api"
+import { PatternFormat, NumericFormat, NumberFormatBase } from "react-number-format"
+import { useEffect } from "react"
+import { isPublicKey } from "@/utils/keypair"
 
 export const nftFormSchema = z.object({
   // collection
@@ -35,7 +38,7 @@ export const nftFormSchema = z.object({
     .string({ required_error: "This field is required." })
     .trim()
     .min(1, "This field is required.")
-    .max(1000, `The maximum allowed length for this field is 200 characters`),
+    .max(200, `The maximum allowed length for this field is 200 characters`),
   collectionExternalUrl: z
     .string()
     .trim()
@@ -58,9 +61,79 @@ export const nftFormSchema = z.object({
     .string({ required_error: "This field is required." })
     .trim()
     .min(1, "This field is required.")
-    .max(1000, `The maximum allowed length for this field is 200 characters`),
+    .max(200, `The maximum allowed length for this field is 200 characters`),
   externalUrl: z.string().trim().max(256, `The maximum allowed length for this field is 256 characters`).optional(),
   collectionAddress: z.string().trim().optional(),
+  royalty: z
+    .number({ required_error: "This field is required." })
+    .min(0, "The royalty must be greater than or equal to 0.")
+    .max(100, "The royalty must not exceed 100."),
+
+  creators: z
+    .array(
+      z.object({
+        wallet: z
+          .string({ required_error: "This field is required." })
+          .trim()
+          .min(1, "This field is required.")
+          .max(44, `The maximum allowed length for this field is 44 characters`)
+          .refine((val) => isPublicKey(val), {
+            message: "Invalid wallet",
+          }),
+        share: z
+          .number({ required_error: "This field is required." })
+          .min(0, "The share must be greater than or equal to 0.")
+          .max(100, "The share must not exceed 100."),
+      })
+    )
+    .optional()
+    .superRefine((values, ctx) => {
+      if (values) {
+        const hasInvalidWallet = values.some((val) => !isPublicKey(val.wallet))
+        if (hasInvalidWallet) {
+          values.forEach((val, idx) => {
+            if (!isPublicKey(val.wallet)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Invalid wallet address`,
+                path: [idx, "wallet"],
+              })
+            }
+          })
+          return
+        }
+
+        const wallets = values.map((val) => val.wallet)
+        const uniqueWallets = Array.from(new Set(values.map((val) => val.wallet)))
+
+        if (uniqueWallets.length < wallets.length) {
+          const uniqueWalletsArr: string[] = []
+          values.forEach((value, index) => {
+            if (uniqueWalletsArr.includes(value.wallet)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `All addresses must be unique`,
+                path: [index, "wallet"],
+              })
+            } else {
+              uniqueWalletsArr.push(value.wallet)
+            }
+          })
+
+          return
+        }
+
+        const totalShare = values.reduce((prev, cur) => prev + cur.share, 0)
+        if (totalShare > 100) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Part of the royalties remained undivided. You must distribute all 100%`,
+            path: [values.length - 1, "share"],
+          })
+        }
+      }
+    }),
+
   attributes: z
     .array(
       z.object({
@@ -98,12 +171,24 @@ export function NewNFTForm() {
       symbol: "",
       description: "",
       externalUrl: "",
+      royalty: 0,
     },
   })
+
+  const wCreators = form.watch("creators")
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "attributes",
+  })
+
+  const {
+    fields: creatorFields,
+    append: appendCreator,
+    remove: removeCreator,
+  } = useFieldArray({
+    control: form.control,
+    name: "creators",
   })
 
   async function onSubmit(values: z.infer<typeof nftFormSchema>) {
@@ -131,7 +216,6 @@ export function NewNFTForm() {
         }
       })
 
-      // const result = await createNFT(formData)
       const result = await api.withToken(session?.accessToken).createNFT(formData)
 
       if (result) {
@@ -155,6 +239,30 @@ export function NewNFTForm() {
       })
     }
   }
+
+  useEffect(() => {
+    if (session) {
+      form.reset({
+        // collection
+        collectionName: "",
+        collectionSymbol: "",
+        collectionDescription: "",
+        collectionExternalUrl: "",
+        // nft
+        name: "",
+        symbol: "",
+        description: "",
+        externalUrl: "",
+        royalty: 0,
+        creators: [
+          {
+            wallet: session.user.wallet,
+            share: 100,
+          },
+        ],
+      })
+    }
+  }, [session])
 
   return (
     <div className="mx-auto">
@@ -215,6 +323,7 @@ export function NewNFTForm() {
                         <Input placeholder="Collection name" error={fieldState.invalid} {...field} />
                       </FormControl>
                       <FormMessage />
+                      {/* <FormDescription>Maximum character limit is 32</FormDescription> */}
                     </FormItem>
                   )}
                 />
@@ -263,12 +372,13 @@ export function NewNFTForm() {
                     <FormItem>
                       <FormLabel>External URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="Collection external URL (optional)" error={fieldState.invalid} {...field} />
+                        <Input
+                          placeholder="Enter the website or link to your project"
+                          error={fieldState.invalid}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
-                      <FormDescription>
-                        URI pointing to an external URL defining the asset — e.g. the game&apos;s main site.
-                      </FormDescription>
                     </FormItem>
                   )}
                 />
@@ -379,19 +489,160 @@ export function NewNFTForm() {
                     <FormItem>
                       <FormLabel>External URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="External URL (optional)" error={fieldState.invalid} {...field} />
+                        <Input
+                          placeholder="Enter the website or link to your project"
+                          error={fieldState.invalid}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-6">
+            <div className="basis-1/4">
+              <Typography as="h6" className="font-bold">
+                Royalties
+              </Typography>
+            </div>
+            <div className="basis-3/4">
+              <div className="mb-5 flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-card">
+                {/* royalty */}
+                <FormField
+                  control={form.control}
+                  name="royalty"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Secondary Sales Royalties</FormLabel>
+                      <FormControl>
+                        <NumericFormat
+                          customInput={Input}
+                          suffix="%"
+                          valueIsNumericString
+                          value={field.value}
+                          onBlur={field.onBlur}
+                          onValueChange={(values) => {
+                            field.onChange(values.floatValue)
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                       <FormDescription>
-                        URI pointing to an external URL defining the asset — e.g. the game&apos;s main site.
+                        The percentage of future sales that will be sent to the creators of this NFT.
                       </FormDescription>
                     </FormItem>
                   )}
                 />
+              </div>
+            </div>
+          </div>
 
+          <div className="flex gap-6">
+            <div className="basis-1/4">
+              <Typography as="h6" className="font-bold">
+                Creators
+              </Typography>
+            </div>
+            <div className="basis-3/4">
+              <div className="mb-5 flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-card">
+                {/* creators */}
+                <div className="space-y-2">
+                  <Typography as="label" className="font-medium">
+                    Creator Splits
+                  </Typography>
+                  <Typography as="p" level="body4" color="secondary">
+                    You can split the royalties for this NFT among multiple creators. Each percentage will be
+                    automatically deposited into each creator’s wallet.
+                  </Typography>
+                </div>
+                {creatorFields.map((field, index) => (
+                  <div className="space-y-2" key={field.id}>
+                    <div className="flex w-full items-start gap-6">
+                      <FormField
+                        control={form.control}
+                        name={`creators.${index}.wallet`}
+                        render={({ field }) => (
+                          <FormItem className="w-full">
+                            <FormLabel>Wallet</FormLabel>
+                            <FormControl>
+                              <Input fullWidth disabled={index === 0} placeholder="Wallet" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`creators.${index}.share`}
+                        render={({ field }) => (
+                          <FormItem className="w-full">
+                            <FormLabel>Royalty Percentage</FormLabel>
+                            <FormControl>
+                              <NumericFormat
+                                customInput={Input}
+                                suffix="%"
+                                valueIsNumericString
+                                value={field.value}
+                                onBlur={field.onBlur}
+                                onValueChange={(values) => {
+                                  console.log("x", values.floatValue)
+                                  field.onChange(values.floatValue)
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <IconButton
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          event.preventDefault()
+                          removeCreator(index)
+                        }}
+                        className="shrink-0 self-center"
+                        disabled={index === 0}
+                      >
+                        <TrashIcon />
+                      </IconButton>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    event.preventDefault()
+                    appendCreator({ wallet: "", share: 0 })
+                  }}
+                  size="sm"
+                  endDecorator={<PlusIcon />}
+                  className="self-start"
+                  disabled={wCreators && wCreators.length === 4}
+                >
+                  Add creator
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-6">
+            <div className="basis-1/4">
+              <Typography as="h6" className="font-bold">
+                Properties
+              </Typography>
+            </div>
+            <div className="basis-3/4">
+              <div className="mb-5 flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-card">
                 {/* attributes */}
                 {fields.map((field, index) => (
-                  <div className="flex w-full items-center gap-6" key={field.id}>
+                  <div className="flex w-full items-start gap-6" key={field.id}>
                     <FormField
                       control={form.control}
                       name={`attributes.${index}.trait_type`}
@@ -426,7 +677,7 @@ export function NewNFTForm() {
                         event.preventDefault()
                         remove(index)
                       }}
-                      className="shrink-0 self-end"
+                      className="shrink-0 self-center"
                     >
                       <TrashIcon />
                     </IconButton>
@@ -443,7 +694,7 @@ export function NewNFTForm() {
                   endDecorator={<PlusIcon />}
                   className="self-start"
                 >
-                  Add attributes
+                  Add property
                 </Button>
               </div>
             </div>

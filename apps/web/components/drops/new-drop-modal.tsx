@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { XIcon, AlertTriangleIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useForm, useFormContext } from "react-hook-form"
 import * as z from "zod"
 import {
@@ -25,7 +25,16 @@ import { IconButton } from "../ui/icon-button"
 import Image from "../ui/image"
 import { Input } from "../ui/input"
 import { useToast } from "../ui/toast"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select"
 import { useFetchContactGroups } from "@/hooks/use-fetch-contact-groups"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { TopCollections } from "@/utils/top-collections"
@@ -40,6 +49,7 @@ import { transferSolTx } from "@/lib/solana"
 import { PublicKey } from "@solana/web3.js"
 import { MASTER_WALLET } from "@/config/env"
 import { formatNumber } from "@/utils/number"
+import { NFT } from "@/types/schema"
 
 type NewDropModalProps = {
   trigger: React.ReactNode
@@ -76,6 +86,26 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
 
   const { data: nfts } = useFetchNFTs()
 
+  const grouppedNFTs = useMemo(() => {
+    if (nfts) {
+      const collectionIds: number[] = []
+      const collections: (NFT & { nfts: NFT[] })[] = []
+
+      nfts.data?.data.forEach((nft) => {
+        if (collectionIds.includes(nft.collectionId as number)) {
+          const collection = collections.find((col) => col.id === (nft.collectionId as number))
+          collection?.nfts.push(nft)
+        } else {
+          collectionIds.push(nft.collectionId as number)
+          collections.push({ ...(nft.collection as NFT), nfts: [nft] })
+        }
+      })
+
+      return collections
+    }
+    return []
+  }, [nfts])
+
   const [tab, setTab] = useState<"group" | "collection">("group")
   const [step, setStep] = useState<"config" | "review">("config")
 
@@ -86,6 +116,12 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
       type: "group",
     },
   })
+
+  const { watch } = form
+
+  const wNFTId = watch("nftId")
+  const wGroupId = watch("groupId")
+  const wCollection = watch("collection")
 
   const onSubmit = async () => {
     setStep("review")
@@ -109,7 +145,10 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
         <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
         <AlertDialogContent className="max-h-[calc(100vh-80px)] max-w-lg overflow-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle>New Drop</AlertDialogTitle>
+            <AlertDialogTitle>
+              {step === "config" && "New Drop"}
+              {step === "review" && "Review"}
+            </AlertDialogTitle>
           </AlertDialogHeader>
 
           <Form {...form}>
@@ -143,19 +182,27 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {nfts?.data?.data?.map((nft) => (
-                              <SelectItem key={nft.id} value={String(nft.id)}>
-                                <div className="!flex items-center gap-3">
-                                  <Image
-                                    src={nft.image ?? ""}
-                                    className="rounded-md"
-                                    alt={nft.name ?? ""}
-                                    width={32}
-                                    height={32}
-                                  />
-                                  {nft.name}
-                                </div>
-                              </SelectItem>
+                            {grouppedNFTs.map((item) => (
+                              <>
+                                <SelectGroup key={item.id}>
+                                  <SelectLabel>{item.name}</SelectLabel>
+                                  {item.nfts.map((nft) => (
+                                    <SelectItem key={nft.id} value={String(nft.id)}>
+                                      <div className="!flex items-center gap-3">
+                                        <Image
+                                          src={nft.image ?? ""}
+                                          className="rounded-md"
+                                          alt={nft.name ?? ""}
+                                          width={32}
+                                          height={32}
+                                        />
+                                        {nft.name}
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                                <SelectSeparator />
+                              </>
                             ))}
                           </SelectContent>
                         </Select>
@@ -178,7 +225,9 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
                 </>
               )}
 
-              {step === "review" && <ReviewStep setIsOpen={setIsOpen} />}
+              {step === "review" && (
+                <ReviewStep nftId={wNFTId} groupId={wGroupId} collection={wCollection} setIsOpen={setIsOpen} />
+              )}
             </form>
           </Form>
 
@@ -294,21 +343,18 @@ const CollectionTab = () => {
   )
 }
 
-const ReviewStep = ({ setIsOpen }: any) => {
+const ReviewStep = ({ setIsOpen, nftId, groupId, collection }: any) => {
   const [loading, setLoading] = useState(false)
   const { publicKey, sendTransaction } = useWallet()
   const { connection } = useConnection()
-  const { watch, getValues } = useFormContext<z.infer<typeof dropFormSchema>>()
+  const { getValues } = useFormContext<z.infer<typeof dropFormSchema>>()
   const { toast } = useToast()
   const { push } = useRouter()
   const { data: nfts } = useFetchNFTs()
 
-  const nftId = watch("nftId")
   const nft = nfts?.data?.data.find((nft) => String(nft.id) === nftId)
-  const groupId = watch("groupId")
-  const collection = watch("collection")
 
-  const { data, isLoading } = useEstimatePrice(groupId ? Number(groupId) : undefined, collection)
+  const { data, isLoading, isValidating } = useEstimatePrice(groupId ? Number(groupId) : undefined, collection)
 
   const onSubmit = async () => {
     try {
@@ -356,6 +402,8 @@ const ReviewStep = ({ setIsOpen }: any) => {
     }
   }
 
+  console.log("isLoading && collection", isLoading && collection)
+
   return (
     <div className="space-y-5">
       <div className="flex justify-center">
@@ -371,7 +419,7 @@ const ReviewStep = ({ setIsOpen }: any) => {
         <Typography level="body4" color="secondary">
           Wallets
         </Typography>
-        {isLoading ? (
+        {isLoading || isValidating ? (
           <Skeleton className="w-20 h-4 rounded-md" />
         ) : (
           <Typography className="font-semibold">{formatNumber(data?.data?.totalWallets ?? 0)}</Typography>
@@ -381,7 +429,7 @@ const ReviewStep = ({ setIsOpen }: any) => {
         <Typography level="body4" color="secondary">
           Est price
         </Typography>
-        {isLoading ? (
+        {isLoading || isValidating ? (
           <Skeleton className="w-20 h-4 rounded-md" />
         ) : (
           <Typography className="font-semibold flex gap-2">
@@ -390,20 +438,42 @@ const ReviewStep = ({ setIsOpen }: any) => {
         )}
       </div>
 
-      <Alert variant="warning">
-        <AlertIcon>
-          <AlertTriangleIcon />
-        </AlertIcon>
-        <div>
-          <AlertDescription>
-            Please review the details of your drop before creating it. You will be asked to pay a transaction fee to
-            create the airdrop.
-          </AlertDescription>
-        </div>
-      </Alert>
+      {isLoading && collection && (
+        <Alert variant="warning">
+          <AlertIcon>
+            <AlertTriangleIcon />
+          </AlertIcon>
+          <div>
+            <AlertDescription>
+              It will take some time to estimate the price depending on the number of holders of the collection. Please
+              wait.
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
+
+      {!isLoading && !isValidating && (
+        <Alert variant="warning">
+          <AlertIcon>
+            <AlertTriangleIcon />
+          </AlertIcon>
+          <div>
+            <AlertDescription>
+              Please review the details of your drop before creating it. You will be asked to pay a transaction fee to
+              create the airdrop.
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
 
       {publicKey ? (
-        <Button onClick={onSubmit} loading={loading} disabled={isLoading || loading} type="submit" fullWidth>
+        <Button
+          onClick={onSubmit}
+          loading={loading}
+          disabled={isLoading || isValidating || loading}
+          type="submit"
+          fullWidth
+        >
           Submit
         </Button>
       ) : (

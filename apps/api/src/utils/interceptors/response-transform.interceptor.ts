@@ -3,8 +3,9 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  HttpException,
 } from '@nestjs/common';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { BaseResponse } from '../types/base-response.type';
 
@@ -30,12 +31,9 @@ export class TransformInterceptor<T>
         return { data, statusCode, message };
       }),
 
-      catchError((err) =>
-        of({
-          statusCode: err?.response?.statusCode ?? 500,
-          error: err?.message ?? 'Unknown error',
-        }),
-      ),
+      catchError((err) => {
+        return throwError(err);
+      }),
     );
   }
 }

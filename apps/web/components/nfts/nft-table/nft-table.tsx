@@ -12,11 +12,11 @@ import {
 } from "@tanstack/react-table"
 import Image from "@/components/ui/image"
 import { NFT } from "@/types/schema"
-import { DataTableRowActions } from "../ui/data-table/row-action"
-import { DataTable } from "../ui/data-table/data-table"
-import { DataTableToolbar } from "../ui/data-table/table-toolbar"
-import { Typography } from "../ui/typography"
+import { DataTable } from "@/components/ui/data-table/data-table"
+import { DataTableToolbar } from "@/components/ui/data-table/table-toolbar"
+import { Typography } from "@/components/ui/typography"
 import Link from "next/link"
+import { RowActions } from "./row-actions"
 
 export function NFTTable() {
   const { data, isLoading } = useFetchNFTs()
@@ -48,8 +48,27 @@ export function NFTTable() {
       },
     },
     {
-      accessorKey: "collectionName",
+      accessorKey: "collection",
       header: "Collection",
+      cell: ({ row }) => {
+        const nft = row.getValue("collection") as NFT
+        return (
+          <div className="flex items-center gap-4">
+            <Image
+              className="rounded-lg w-12 h-12 overflow-hidden"
+              src={nft.image ?? ""}
+              alt={nft.name ?? ""}
+              width={48}
+              height={48}
+            />
+            <Link className="hover:underline cursor-pointer" href="">
+              <Typography level="body4" className="font-semibold">
+                {nft.name}
+              </Typography>
+            </Link>
+          </div>
+        )
+      },
     },
     {
       accessorKey: "createdAt",
@@ -61,7 +80,7 @@ export function NFTTable() {
     {
       id: "actions",
       cell: ({ row }) => {
-        return <DataTableRowActions row={row} />
+        return <RowActions row={row} />
       },
     },
   ]

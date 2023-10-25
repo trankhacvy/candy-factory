@@ -174,7 +174,7 @@ export class AirdropProcessor {
       }>
     >,
   ) {
-    const { drop, collection } = job.data.payload;
+    const { collection } = job.data.payload;
     this.logger.debug('Start fetching holder for collection: ' + collection);
 
     const holders =

@@ -31,7 +31,9 @@ export class AudienceGroup extends EntityHelper {
   @Column({ type: Boolean, default: false, nullable: true })
   isFavorite: boolean;
 
-  @OneToMany(() => Audience, (entity) => entity.group)
+  @OneToMany(() => Audience, (entity) => entity.group, {
+    cascade: true,
+  })
   members: Audience[];
 
   @OneToMany(() => Drop, (drop) => drop.group)

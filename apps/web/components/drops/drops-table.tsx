@@ -70,7 +70,6 @@ export function DropsTable() {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnFiltersChange: setColumnFilters,
-    debugTable: true,
   })
 
   return (

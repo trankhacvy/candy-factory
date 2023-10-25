@@ -6,18 +6,18 @@ import { forwardRefWithAs } from "@/utils/render"
 const iconVariants = tv({
   base: [
     "btn-icon inline-flex items-center justify-center rounded-full transition-colors",
-    "focus:outline-none",
-    "disabled:pointer-events-none",
+    "focus:outline-none focus:ring-2",
+    "disabled:pointer-events-none disabled:text-gray-500/80",
     "active:scale-95",
   ],
   variants: {
     color: {
-      primary: "text-primary-500 hover:bg-primary-500/8",
-      default: "text-gray-800 hover:bg-gray-800/8",
-      success: "text-success-500 hover:bg-success-500/8",
-      info: "text-info-500 hover:bg-info-500/8",
-      warning: "text-warning-500 hover:bg-warning-500/8",
-      error: "text-error-500 hover:bg-error-500/8",
+      primary: "text-primary-500 hover:bg-primary-500/8 focus:ring-primary-500",
+      default: "text-gray-800 hover:bg-gray-800/8 focus:ring-gray-500",
+      success: "text-success-500 hover:bg-success-500/8 focus:ring-success-500",
+      info: "text-info-500 hover:bg-info-500/8 focus:ring-info-500",
+      warning: "text-warning-500 hover:bg-warning-500/8 focus:ring-warning-500",
+      error: "text-error-500 hover:bg-error-500/8 focus:ring-error-500",
     },
     size: {
       sm: "p-2",

@@ -14,7 +14,6 @@ import {
   CreateAudienceGroupWithCsvDto,
   CreateAudienceGroupWithCollectionDto,
 } from './dto/create-group.dto';
-import { IPaginationOptions } from 'src/utils/types/pagination-options';
 import { EntityCondition } from 'src/utils/types/entity-condition.type';
 import { AudiencesService } from 'src/audiences/audiences.service';
 import { Audience } from 'src/audiences/entities/audience.entity';
@@ -188,8 +187,11 @@ export class AudienceGroupsService {
   }
 
   async softDelete(id: AudienceGroup['id']): Promise<void> {
-    await this.findOne({ id });
-    await this.audienceGroupsRepository.softDelete(id);
+    const group = await this.audienceGroupsRepository.findOneOrFail({
+      where: { id },
+      relations: ['members'],
+    });
+    await this.audienceGroupsRepository.softRemove(group);
   }
 
   async findManyWithPagination(

@@ -108,6 +108,12 @@ class Api {
     })
   }
 
+  public getNFT(nftId: number | string) {
+    return fetcher<BaseResponse<NFT>>(`${BASE_URL}/nfts/${nftId}`, {
+      headers: this.headers,
+    })
+  }
+
   public createNFT(body: FormData) {
     return fetcher<NFT>(`${BASE_URL}/nfts`, {
       headers: {
@@ -140,9 +146,9 @@ class Api {
     })
   }
 
-  public getContactGroup(request: PaginationRequest = { page: 1, limit: 10 }) {
+  public getContactGroup(request?: PaginationRequest) {
     return fetcher<BaseResponse<BaseListResponse<AudienceGroup>>>(
-      `${BASE_URL}/audience-groups?${qs.stringify(request)}`,
+      `${BASE_URL}/audience-groups?${qs.stringify(request ?? {})}`,
       {
         headers: this.headers,
       }
@@ -162,6 +168,20 @@ class Api {
         headers: this.headers,
       }
     )
+  }
+
+  public deleteWalletGroup(id: string | number) {
+    return fetcher<BaseResponse<void>>(`${BASE_URL}/audience-groups/${id}`, {
+      headers: this.headers,
+      method: "DELETE",
+    })
+  }
+
+  public deleteWallet(id: string | number) {
+    return fetcher<BaseResponse<void>>(`${BASE_URL}/audiences/${id}`, {
+      headers: this.headers,
+      method: "DELETE",
+    })
   }
 
   //transactions

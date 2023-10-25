@@ -13,14 +13,14 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { AudienceGroup } from "@/types/schema"
-import { DataTable } from "../ui/data-table/data-table"
-import { Input } from "../ui/input"
+import { DataTable } from "@/components/ui/data-table/data-table"
+import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { Typography } from "../ui/typography"
-import { DataTableRowActions } from "../ui/data-table/row-action"
+import { Typography } from "@/components/ui/typography"
 import { PageOptionRequest } from "@/types"
 import useDebounce from "@/hooks/use-debounce"
 import { formatNumber } from "@/utils/number"
+import { RowActions } from "./row-action"
 
 const useDebouncedSearchValue = (columnFilters: ColumnFiltersState) => {
   const searchValue = useMemo(() => columnFilters.find((filter) => filter.id === "name")?.value ?? "", [columnFilters])
@@ -45,6 +45,14 @@ export function WalletsGroupTable() {
         q: searchText,
       }) as PageOptionRequest,
     [pageIndex, pageSize, searchText]
+  )
+
+  const pagination = useMemo(
+    () => ({
+      pageIndex,
+      pageSize,
+    }),
+    [pageIndex, pageSize]
   )
 
   const { data, isLoading } = useFetchContactGroups(pageRequest)
@@ -80,7 +88,7 @@ export function WalletsGroupTable() {
     {
       id: "actions",
       cell: ({ row }) => {
-        return <DataTableRowActions row={row} />
+        return <RowActions row={row} />
       },
     },
   ]
@@ -90,10 +98,13 @@ export function WalletsGroupTable() {
     columns,
     state: {
       columnFilters,
+      pagination,
     },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
+    manualPagination: true,
   })
 
   return (

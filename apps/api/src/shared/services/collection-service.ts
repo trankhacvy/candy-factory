@@ -30,6 +30,10 @@ export class CollectionService {
           limit: ITEM_PER_PAGE,
         });
 
+        console.log(
+          `fetch holder page: ${page}, total: ${response.items.length} `,
+        );
+
         allNFTs.push(...response.items);
 
         if (response.total < ITEM_PER_PAGE) {

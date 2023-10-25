@@ -131,20 +131,16 @@ export interface NFT {
   image: string
   metadataUri: string
   externalUrl?: string
+  isCollection: boolean
   attributes?: string[]
-  creator?: string
-  /** @maxLength 32 */
-  collectionName?: string
-  /** @maxLength 200 */
-  collectionDescription?: string
-  /** @maxLength 10 */
-  collectionSymbol?: string
-  collectionImage?: string
-  collectionMetadataUri?: string
-  collectionExternalUrl?: string
+  creators?: string[]
   drops?: Drop[]
   user: User
   userId: number
+  collectionId?: number
+  collection?: NFT
+  collectionAddress?: string
+  collectionKeys?: object
   /** @format date-time */
   createdAt: string
   /** @format date-time */
@@ -195,6 +191,11 @@ export interface UpdateAudienceGroupDto {
   isFavorite?: boolean
 }
 
+export interface AttributeDto {
+  traitType: string
+  value: string
+}
+
 export interface CreateNFTDto {
   /**
    * @maxLength 32
@@ -217,13 +218,11 @@ export interface CreateNFTDto {
    */
   image: File
   /**
-   * attributes
+   * creators
    * Attributes associated to this NFT
-   * @example [{"trait_type":"edification","value":"100"}]
+   * @example [{"wallet":"Brx4nDtUuV9JTMSAUbJjn34jYVTVKeFE3v87qF8rDrkt","share":100}]
    */
-  attributes: string
-  /** @example "0x00" */
-  creator?: string
+  creators: string
   /** @example "http://google.com" */
   externalUrl?: string
   /**
@@ -245,10 +244,12 @@ export interface CreateNFTDto {
    * Image that you would want to turn into collection
    * @format binary
    */
-  collectionImage: File
+  collectionImage?: File | null
   /** @example "http://google.com" */
   collectionExternalUrl?: string | null
-  userId: number
+  attributes: AttributeDto[]
+  collectionId?: number
+  royalty?: number
 }
 
 export interface UpdateNFTDto {
@@ -336,10 +337,4 @@ export interface UpdateTransactionDto {
 export interface AuthEmailLoginDto {
   /** @example "63EEC9FfGyksm7PkVC6z8uAmqozbQcTzbkWJNsgqjkFs" */
   wallet: string
-}
-
-export interface StatDto {
-  totalDrop: number
-  totalAirdropedNft: number
-  totalWallets: number
 }

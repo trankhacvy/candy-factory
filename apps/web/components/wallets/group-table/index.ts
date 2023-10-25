@@ -1,0 +1,1 @@
+export { WalletsGroupTable } from './group-table'

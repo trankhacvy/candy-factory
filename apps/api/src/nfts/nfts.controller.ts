@@ -54,11 +54,16 @@ export class NFTsController {
       collectionImage?: Express.Multer.File[];
     },
   ): Promise<NFT> {
-    return this.nftService.create({
-      ...dto,
-      ...files,
-      userId: user.id,
-    });
+    console.log('dto', dto);
+
+    // return this.nftService.create(
+    //   {
+    //     ...dto,
+    //     ...files,
+    //   },
+    //   user,
+    // );
+    return true as any
   }
 
   @Patch(':id')
@@ -84,7 +89,6 @@ export class NFTsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(TransformInterceptor)
   findOne(@Param('id') id: string): Promise<NFT> {
     return this.nftService.findOne({ id: +id });
   }

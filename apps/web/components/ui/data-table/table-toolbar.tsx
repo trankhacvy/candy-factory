@@ -14,7 +14,10 @@ export function DataTableToolbar<TData>({ table }: DataTableToolbarProps<TData>)
         <Input
           placeholder="Search..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
+          onChange={(event) => {
+            console.log("filter", event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
+          }}
           className="max-w-lg"
         />
       </div>

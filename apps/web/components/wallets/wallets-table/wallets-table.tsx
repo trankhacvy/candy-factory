@@ -1,28 +1,42 @@
 "use client"
 
-import { DataTable } from "../ui/data-table/data-table"
+import { DataTable } from "@/components/ui/data-table/data-table"
 import {
   ColumnDef,
   ColumnFiltersState,
   PaginationState,
+  Table,
   VisibilityState,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 import { Audience, AudienceGroup } from "@/types/schema"
 import { useMemo, useState } from "react"
-import { DataTableToolbar } from "../ui/data-table/table-toolbar"
 import truncate from "@/utils/truncate"
 import { getExplorerUrl } from "@/utils/explorer"
 import { useSession } from "next-auth/react"
 import { useFetchWallets } from "@/hooks/use-fetch-contact-groups"
 import dayjs from "dayjs"
-import { DataTableRowActions } from "../ui/data-table/row-action"
+import { Input } from "@/components/ui/input"
+import { PageOptionRequest } from "@/types"
+import useDebounce from "@/hooks/use-debounce"
+import { RowActions } from "./row-action"
+
+const useDebouncedSearchValue = (columnFilters: ColumnFiltersState) => {
+  const searchValue = useMemo(
+    () => columnFilters.find((filter) => filter.id === "wallet")?.value ?? "",
+    [columnFilters]
+  )
+
+  return useDebounce<string>(searchValue as string, 300)
+}
 
 export function WalletsTable({ group }: { group?: AudienceGroup }) {
   const { data: session } = useSession()
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+
+  const searchText = useDebouncedSearchValue(columnFilters)
 
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -30,11 +44,13 @@ export function WalletsTable({ group }: { group?: AudienceGroup }) {
   })
 
   const pageRequest = useMemo(
-    () => ({
-      page: pageIndex + 1,
-      take: pageSize,
-    }),
-    [pageIndex, pageSize]
+    () =>
+      ({
+        page: pageIndex + 1,
+        take: pageSize,
+        q: searchText,
+      }) as PageOptionRequest,
+    [pageIndex, pageSize, searchText]
   )
 
   const { data: walletsData, isLoading: isTxLoading } = useFetchWallets(String(group?.id), pageRequest)
@@ -71,7 +87,7 @@ export function WalletsTable({ group }: { group?: AudienceGroup }) {
     {
       id: "actions",
       cell: ({ row }) => {
-        return <DataTableRowActions row={row} />
+        return group ? <RowActions row={row} groupId={group.id} /> : null
       },
     },
   ]
@@ -90,7 +106,6 @@ export function WalletsTable({ group }: { group?: AudienceGroup }) {
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     manualPagination: true,
-    debugTable: true,
   })
 
   return (
@@ -101,6 +116,25 @@ export function WalletsTable({ group }: { group?: AudienceGroup }) {
         columns={columns.length}
         toolbar={<DataTableToolbar table={table} />}
       />
+    </div>
+  )
+}
+
+interface DataTableToolbarProps {
+  table: Table<Audience>
+}
+
+export function DataTableToolbar({ table }: DataTableToolbarProps) {
+  return (
+    <div className="flex items-center justify-between p-5">
+      <div className="flex flex-1 items-center space-x-2">
+        <Input
+          placeholder="Search..."
+          value={(table.getColumn("wallet")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("wallet")?.setFilterValue(event.target.value)}
+          className="max-w-lg"
+        />
+      </div>
     </div>
   )
 }

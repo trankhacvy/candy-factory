@@ -50,8 +50,9 @@ export class AudiencesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: number): Promise<void> {
-    return this.audiencesService.softDelete(id);
+  async remove(@Param('id') id: number): Promise<any> {
+    await this.audiencesService.softDelete(id);
+    return {};
   }
 
   @Get()
