@@ -9,7 +9,6 @@ import {
   EstimatePriceDto,
   EstimatePriceResponseDto,
   NFT,
-  StatDto,
   Transaction,
 } from "@/types/schema"
 import qs from "query-string"
@@ -18,6 +17,12 @@ import { BaseListResponse, BaseListResponseV2, BaseResponse, PageOptionRequest, 
 import { BACKEND_API_URL } from "@/config/env"
 
 const BASE_URL = BACKEND_API_URL
+
+export interface StatDto {
+  totalDrop: number
+  totalAirdropedNft: number
+  totalWallets: number
+}
 
 class Api {
   headers: HeadersInit = {
