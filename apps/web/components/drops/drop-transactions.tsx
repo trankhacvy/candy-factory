@@ -11,7 +11,6 @@ import {
 } from "@tanstack/react-table"
 import { Drop, DropTransaction } from "@/types/schema"
 import { useMemo, useState } from "react"
-import { DataTableToolbar } from "../ui/data-table/table-toolbar"
 import { useFetchDropTxs } from "@/hooks/use-fetch-drop-txs"
 import truncate from "@/utils/truncate"
 import { getExplorerUrl } from "@/utils/explorer"
@@ -65,17 +64,6 @@ export function DropTransactions({ drop }: { drop?: Drop }) {
       },
     },
     {
-      accessorKey: "nftAddress",
-      header: "NFT",
-      cell: ({ row }) => {
-        return (
-          <a target="_blank" href={getExplorerUrl(row.getValue("nftAddress"), "address", true)}>
-            {truncate(row.getValue("nftAddress") ?? "", 12, true)}
-          </a>
-        )
-      },
-    },
-    {
       accessorKey: "signature",
       header: "Signature",
       cell: ({ row }) => {
@@ -119,7 +107,7 @@ export function DropTransactions({ drop }: { drop?: Drop }) {
         loading={isTxLoading || !session}
         table={table}
         columns={columns.length}
-        toolbar={<DataTableToolbar table={table} />}
+        // toolbar={<DataTableToolbar table={table} />}
       />
     </div>
   )

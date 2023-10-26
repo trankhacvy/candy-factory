@@ -134,8 +134,9 @@ export class DropsService {
       );
 
       const priceInSol = await this.pythService.convertUSDToSol(priceInUSD);
+      console.log('priceInSol', priceInSol.toString());
 
-      if (priceInSol < 0)
+      if (priceInSol <= 0)
         throw new InternalServerErrorException('Unknown error');
 
       return {
@@ -154,7 +155,7 @@ export class DropsService {
 
       const priceInSol = await this.pythService.convertUSDToSol(priceInUSD);
 
-      if (priceInSol < 0)
+      if (priceInSol <= 0)
         throw new InternalServerErrorException('Unknown error');
 
       return {

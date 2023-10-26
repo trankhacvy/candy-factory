@@ -42,7 +42,7 @@ export class PythService {
 
   async convertUSDToSol(usd: number) {
     const solPrice = await this.getSolPrice();
-    if (solPrice < 0) return -1;
+    if (solPrice <= 0) return -1;
 
     return usd / solPrice;
   }

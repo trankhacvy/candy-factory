@@ -141,6 +141,7 @@ export interface NFT {
   collection?: NFT
   collectionAddress?: string
   collectionKeys?: object
+  royalty: number
   /** @format date-time */
   createdAt: string
   /** @format date-time */
@@ -315,7 +316,7 @@ export interface EstimatePriceDto {
 
 export interface EstimatePriceResponseDto {
   totalWallets: number
-  price: number
+  price: object
 }
 
 export interface UpdateDropDto {

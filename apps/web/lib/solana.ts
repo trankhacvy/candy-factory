@@ -5,7 +5,7 @@ export const transferSolTx = (sender: PublicKey, receiver: PublicKey, sol: numbe
     SystemProgram.transfer({
       fromPubkey: sender,
       toPubkey: receiver,
-      lamports: sol * LAMPORTS_PER_SOL,
+      lamports: Math.round(sol * LAMPORTS_PER_SOL),
     })
   )
 }

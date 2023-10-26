@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { BotIcon, SendIcon, WalletIcon } from "lucide-react"
 import Image from "next/image"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { siteConfig } from "@/config/site"
 
 export default function HomePage() {
   return (
@@ -49,8 +50,8 @@ const HeroSection = () => {
               The easiest way to airdrop <span className="text-primary-500 dark:text-white">cNFTs</span> at scale
             </h1>
             <Typography as="p" color="secondary" className="mt-8 lg:max-w-lg mx-auto">
-              Candy Factory simplifies the process of creating, airdropping, and managing cNFTs, all without the need
-              for any coding.
+              {siteConfig.name} simplifies the process of creating, airdropping, and managing cNFTs, all without the
+              need for any coding.
             </Typography>
             <div className="mt-10 flex flex-wrap justify-center gap-y-4 gap-x-6">
               <div>
@@ -74,68 +75,6 @@ const HeroSection = () => {
                   Easily integrate the airdrop API and wallet management API into your business workflow. (Coming Soon)
                 </p>
               </div>
-            </div>
-          </div>
-          <div className="hidden mt-12 grid-cols-3 sm:grid-cols-4 md:grid-cols-6">
-            <div className="p-4 grayscale transition duration-200 hover:grayscale-0">
-              <img
-                src="https://astrolus.netlify.app/images/clients/microsoft.svg"
-                className="h-12 w-auto mx-auto"
-                loading="lazy"
-                alt="client logo"
-                width=""
-                height=""
-              />
-            </div>
-            <div className="p-4 grayscale transition duration-200 hover:grayscale-0">
-              <img
-                src="https://astrolus.netlify.app/images/clients/microsoft.svg"
-                className="h-12 w-auto mx-auto"
-                loading="lazy"
-                alt="client logo"
-                width=""
-                height=""
-              />
-            </div>
-            <div className="p-4 flex grayscale transition duration-200 hover:grayscale-0">
-              <img
-                src="https://astrolus.netlify.app/images/clients/microsoft.svg"
-                className="h-9 w-auto m-auto"
-                loading="lazy"
-                alt="client logo"
-                width=""
-                height=""
-              />
-            </div>
-            <div className="p-4 grayscale transition duration-200 hover:grayscale-0">
-              <img
-                src="https://astrolus.netlify.app/images/clients/microsoft.svg"
-                className="h-12 w-auto mx-auto"
-                loading="lazy"
-                alt="client logo"
-                width=""
-                height=""
-              />
-            </div>
-            <div className="p-4 flex grayscale transition duration-200 hover:grayscale-0">
-              <img
-                src="https://astrolus.netlify.app/images/clients/microsoft.svg"
-                className="h-8 w-auto m-auto"
-                loading="lazy"
-                alt="client logo"
-                width=""
-                height=""
-              />
-            </div>
-            <div className="p-4 grayscale transition duration-200 hover:grayscale-0">
-              <img
-                src="https://astrolus.netlify.app/images/clients/microsoft.svg"
-                className="h-12 w-auto mx-auto"
-                loading="lazy"
-                alt="client logo"
-                width=""
-                height=""
-              />
             </div>
           </div>
         </div>

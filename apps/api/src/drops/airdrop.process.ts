@@ -36,7 +36,7 @@ export class AirdropProcessor {
     private collectionService: CollectionService,
   ) {}
 
-  @Process({ concurrency: 1 })
+  @Process({ concurrency: 5 })
   async handleTranscode(job: Job<JobDataModel<any>>) {
     this.logger.debug('Start transcoding...', job.id, job.data.type);
 
