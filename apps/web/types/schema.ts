@@ -316,7 +316,7 @@ export interface EstimatePriceDto {
 
 export interface EstimatePriceResponseDto {
   totalWallets: number
-  price: object
+  price: number
 }
 
 export interface UpdateDropDto {

@@ -1,4 +1,4 @@
 export class EstimatePriceResponseDto {
   totalWallets: number;
-  price: number | string;
+  price: number;
 }
