@@ -49,11 +49,14 @@ export class NFT extends EntityHelper {
     default: () => "'[]'",
     nullable: false,
   })
-  @IsOptional()
   attributes?: Array<{ trait_type: string; value: string }>;
 
-  @Column({ type: String, nullable: true })
-  @IsOptional()
+  @Column({
+    type: 'jsonb',
+    array: false,
+    default: () => "'[]'",
+    nullable: false,
+  })
   creators?: Array<{ creator: string; share: number }>;
 
   @OneToMany(() => Drop, (drop) => drop.nft)
@@ -87,8 +90,8 @@ export class NFT extends EntityHelper {
   })
   public collectionKeys?: Record<string, string>;
 
-  // @Column({ type: Number, default: 0 })
-  // royalty: number;
+  @Column({ type: Number, default: 0 })
+  royalty: number;
 
   @CreateDateColumn()
   createdAt: Date;

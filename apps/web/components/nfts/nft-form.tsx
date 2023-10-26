@@ -210,6 +210,8 @@ export function NewNFTForm() {
           formData.append("collectionImage", values[key])
         } else if (key === "attributes") {
           formData.append("attributes", JSON.stringify(values[key]))
+        } else if (key === "creators") {
+          formData.append("creators", JSON.stringify(values[key]))
         } else {
           // @ts-ignore
           formData.append(key, values[key])

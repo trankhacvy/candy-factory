@@ -3,9 +3,8 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  HttpException,
 } from '@nestjs/common';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { BaseResponse } from '../types/base-response.type';
 
@@ -22,7 +21,7 @@ export class TransformInterceptor<T>
     const req = context.switchToHttp().getRequest();
 
     if (excludePaths.includes(req.url)) return next.handle();
-    console.log('check');
+
     return next.handle().pipe(
       map((data) => {
         const statusCode = context.switchToHttp().getResponse().statusCode;

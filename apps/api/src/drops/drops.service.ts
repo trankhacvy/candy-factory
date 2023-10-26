@@ -140,7 +140,7 @@ export class DropsService {
 
       return {
         totalWallets: audiences.length,
-        price: roundNumber(priceInSol),
+        price: roundNumber(priceInSol, 10 ** 5),
       };
     } else {
       const holders = await this.collectionService.loadHoldersOfCollection(
@@ -159,7 +159,7 @@ export class DropsService {
 
       return {
         totalWallets: holders.length,
-        price: roundNumber(priceInSol),
+        price: roundNumber(priceInSol, 10 ** 5),
       };
     }
   }

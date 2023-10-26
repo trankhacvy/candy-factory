@@ -20,34 +20,30 @@ export default async function Image() {
           alignItems: "center",
           justifyContent: "center",
           flexDirection: "column",
-          backgroundImage: "linear-gradient(to bottom, #dbf4ff, #fff1f1)",
-          fontSize: 60,
-          letterSpacing: -2,
-          fontWeight: 700,
+          backgroundImage: "linear-gradient(to right, #ee9ca7, #ffdde1)",
           textAlign: "center",
         }}
       >
+        <img
+          src="https://candy-factory-m1yvqi6u4-khacvy93.vercel.app/_next/image?url=%2Fassets%2Flogo.png&w=96&q=75"
+          width={160}
+          height={160}
+        />
+
         <div
           style={{
-            backgroundImage: "linear-gradient(90deg, rgb(0, 124, 240), rgb(0, 223, 216))",
+            backgroundImage: "linear-gradient(to right, #8a2387, #e94057, #f27121)",
             backgroundClip: "text",
             // @ts-ignore
             "-webkit-background-clip": "text",
             color: "transparent",
+            fontSize: 60,
+            letterSpacing: -2,
+            fontWeight: 700,
+            maxWidth: "700px",
           }}
         >
-          cNFT
-        </div>
-        <div
-          style={{
-            backgroundImage: "linear-gradient(90deg, rgb(121, 40, 202), rgb(255, 0, 128))",
-            backgroundClip: "text",
-            // @ts-ignore
-            "-webkit-background-clip": "text",
-            color: "transparent",
-          }}
-        >
-          Airdrop
+          The easiest way to airdrop cNFTs at scale
         </div>
       </div>
     ),

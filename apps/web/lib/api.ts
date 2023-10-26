@@ -54,7 +54,7 @@ class Api {
   }
 
   public initUser() {
-    return fetcher(`${BASE_URL}/auth/init`, {
+    return fetcher(`${BASE_URL}/setup`, {
       headers: this.headers,
       method: "POST",
     })

@@ -7,7 +7,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <Typography as="h4" level="body1" className="font-bold lg:text-2xl">
-            Settings
+            Payments
           </Typography>
         </div>
       </div>

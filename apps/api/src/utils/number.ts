@@ -1,2 +1,2 @@
-export const roundNumber = (num: number) =>
-  Math.round((num + Number.EPSILON) * 1000) / 1000;
+export const roundNumber = (num: number, precision = 1000) =>
+  Math.round((num + Number.EPSILON) * precision) / precision;

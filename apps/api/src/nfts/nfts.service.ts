@@ -60,19 +60,6 @@ export class NFTsService {
 
       const payer = this.connectionService.feePayer;
 
-      console.log(
-        {
-          address: payer.publicKey,
-          verified: false,
-          share: (dto.creators ?? []).length === 0 ? 100 : 0,
-        },
-        ...(dto.creators ?? []).map((item) => ({
-          address: new PublicKey(item.wallet ?? ''),
-          verified: false,
-          share: Number(item.share),
-        })),
-      );
-
       const collectionMetadata: CreateMetadataAccountArgsV3 = {
         data: {
           name: metadata.name,
@@ -158,6 +145,12 @@ export class NFTsService {
         attributes: metadata.attributes,
         collectionId: nftCollection.id,
       }),
+    );
+  }
+
+  async createRaw(nft: Partial<NFT>) {
+    return this.nftsRepository.save(
+      this.nftsRepository.create(nft),
     );
   }
 

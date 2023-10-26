@@ -35,9 +35,9 @@ export default function Nav() {
         icon: <ImageIcon width={18} />,
       },
       {
-        name: "Settings",
-        href: "/dashboard/settings",
-        isActive: segments[0] === "settings",
+        name: "Payments",
+        href: "/dashboard/payments",
+        isActive: segments[0] === "payments",
         icon: <SettingsIcon width={18} />,
       },
     ]

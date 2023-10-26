@@ -22,6 +22,7 @@ const WelcomePage = () => {
         .withToken(session.accessToken)
         .initUser()
         .then(async () => {
+          console.log("done")
           await update({ init: true })
           replace("/dashboard")
         })

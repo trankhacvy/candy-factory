@@ -7284,25 +7284,33 @@ export const initGroups = [
 ];
 
 export const initNFT = {
-  name: 'SUPER',
+  name: 'Welcome to cNFT Drops',
   description: 'NICE TO MEET YOU',
-  symbol: 'SUP',
-  image: 'https://arweave.net/GRcfm0cMTrLPHvrfGoz6lqtfuvRHCrIfL5Ljb3E3Q0c',
+  symbol: 'CD',
+  // image: 'https://arweave.net/GRcfm0cMTrLPHvrfGoz6lqtfuvRHCrIfL5Ljb3E3Q0c',
+  image:
+    'https://nftstorage.link/ipfs/bafybeiavzgsi4t6ixweirvgi5cpfq2uc6k6lo5hoyl5svhmmeg6w27rx44',
+  // metadataUri:
+  //   'https://arweave.net/p1YSB32uceFXAZSCnHvpL8SHCrA3yFdrSa3p_DIpuk4',
   metadataUri:
-    'https://arweave.net/p1YSB32uceFXAZSCnHvpL8SHCrA3yFdrSa3p_DIpuk4',
-  externalUrl: 'https://google.com',
+    'https://nftstorage.link/ipfs/bafkreih7xcpdxr6tedwiocqqvdukkjwt4sseshnsvz3zox66osuqzk5moa',
+  externalUrl: 'https://www.cnftdrops.xyz',
   attributes: [
     {
-      value: 'red',
-      trait_type: 'color',
+      value: 'sample',
+      trait_type: 'type',
     },
   ],
-  collectionName: 'SUPER',
-  collectionDescription: 'HELLO',
-  collectionSymbol: 'SUP',
+  collectionName: 'Welcome to cNFT Drops',
+  collectionDescription: 'NICE TO MEET YOU',
+  collectionSymbol: 'CD',
   collectionImage:
-    'https://arweave.net/vLSEwfUMLrVQeloHALGzLvTwiVcdtjokZRRhWLXSCpw',
+    'https://nftstorage.link/ipfs/bafybeiavzgsi4t6ixweirvgi5cpfq2uc6k6lo5hoyl5svhmmeg6w27rx44',
   collectionMetadataUri:
-    'https://arweave.net/f89PHyeyKEIzTF07HuCfYiz54uHSsb4CRWehAOGBqCQ',
-  collectionExternalUrl: 'https://google.com',
+    'https://nftstorage.link/ipfs/bafkreih7xcpdxr6tedwiocqqvdukkjwt4sseshnsvz3zox66osuqzk5moa',
+  collectionExternalUrl: 'https://www.cnftdrops.xyz',
+  mintAddress: '7112ogTRT3DGmaYLvs1DAFBKPXJtpm6Fxx68kZ2xJQFj',
+  masterEditionAddress: 'EXYHPbhZ1zC1rPYfh7BdGDCbbbJ71Vkh4Umy6BBFdHJz',
+  metadataAddress: 'BJ3mtPdWPT84GrzddttYteCw94iMmdJJrYuYJgqec381',
+  tokenAddress: 'EVTKuuZnvDgTac786VuaYefZKm9FgKrZj8CA9d32MRdz',
 };

@@ -22,7 +22,6 @@ import { UpdateNFTDto } from './dto/update-nft.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthUser } from 'src/utils/decorators/auth-user.decorator';
 import { User } from 'src/users/entities/user.entity';
-import { TransformInterceptor } from 'src/utils/interceptors/response-transform.interceptor';
 import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 import { PageDto } from 'src/utils/dtos/page.dto';
 
@@ -54,16 +53,13 @@ export class NFTsController {
       collectionImage?: Express.Multer.File[];
     },
   ): Promise<NFT> {
-    console.log('dto', dto);
-
-    // return this.nftService.create(
-    //   {
-    //     ...dto,
-    //     ...files,
-    //   },
-    //   user,
-    // );
-    return true as any
+    return this.nftService.create(
+      {
+        ...dto,
+        ...files,
+      },
+      user,
+    );
   }
 
   @Patch(':id')
