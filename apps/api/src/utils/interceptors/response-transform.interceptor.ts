@@ -25,7 +25,7 @@ export class TransformInterceptor<T>
     return next.handle().pipe(
       map((data) => {
         const statusCode = context.switchToHttp().getResponse().statusCode;
-        const message = data.message;
+        const message = data?.message;
 
         return { data, statusCode, message };
       }),

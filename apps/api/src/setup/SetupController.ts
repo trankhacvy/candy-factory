@@ -24,6 +24,6 @@ export class SetupController {
   @HttpCode(HttpStatus.OK)
   async getStat(@AuthUser() user) {
     await this.setupService.initAccount(user);
-    return true;
+    return { success: true };
   }
 }
