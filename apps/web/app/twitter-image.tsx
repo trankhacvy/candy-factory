@@ -1,8 +1,9 @@
+import { siteConfig } from "@/config/site"
 import { ImageResponse } from "next/server"
 
 export const runtime = "edge"
 
-export const alt = "About Acme"
+export const alt = siteConfig.name
 export const size = {
   width: 1200,
   height: 630,
@@ -24,11 +25,7 @@ export default async function Image() {
           textAlign: "center",
         }}
       >
-        <img
-          src="/assets/logo.png"
-          width={160}
-          height={160}
-        />
+        <img src="https://www.cnftdrops.xyz/assets/logo.png" width={160} height={160} />
 
         <div
           style={{
@@ -47,7 +44,6 @@ export default async function Image() {
         </div>
       </div>
     ),
-
     {
       ...size,
     }
