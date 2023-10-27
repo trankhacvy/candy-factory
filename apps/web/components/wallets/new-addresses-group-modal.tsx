@@ -162,7 +162,7 @@ export const NewAddressesGroupModal = ({ trigger, isOpen, onOpenChange }: NewAdd
                   <FormItem className="mb-5">
                     <FormLabel>Group name</FormLabel>
                     <FormControl>
-                      <Input fullWidth placeholder="eg. Vip members" {...field} />
+                      <Input fullWidth placeholder="Group name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -216,7 +216,8 @@ const GroupTabs = ({ value, onValueChange }: any) => {
             special characters other than hyphens (<code>-</code>) or underscores(<code>_</code>)
             <a
               className="font-semibold underline block"
-              href="https://gist.githubusercontent.com/trankhacvy/ddf5cc9aa3085873e9324ca728b43372/raw/7b728e01ef06c5d3d935b5eb49f19fafcdb6f769/SampleWallet.csv"
+              href="/samples/SampleWallets.csv"
+              download="SampleWallets.csv"
               target="_blank"
             >
               Sample file
@@ -303,7 +304,7 @@ const LoadCollectionHolders = () => {
         <FormItem className="mb-5">
           <FormLabel>Collection address</FormLabel>
           <FormControl>
-            <Input fullWidth placeholder="eg. J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w" {...field} />
+            <Input fullWidth placeholder="Collection address" {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>

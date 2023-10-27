@@ -1,12 +1,7 @@
 "use client"
 
 import { XIcon } from "lucide-react"
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { IconButton } from "@/components/ui/icon-button"
 import { useFetchNFT } from "@/hooks/use-fetch-nfts"
 import { AspectRatio } from "../ui/aspect-ratio"
@@ -88,14 +83,14 @@ export const NFTDetailModal = ({ trigger, isOpen, onOpenChange, nftId }: NFTDeta
                         {formatNumber(nft?.royalty ?? 0)}%
                       </Typography>
                     </div>
-                    <div className="flex gap-4">
+                    {/* <div className="flex gap-4">
                       <Typography as="h6" level="body4" className="font-semibold flex-1">
                         Collection
                       </Typography>
                       <Typography as="p" level="body4" color="secondary">
                         {nft?.collection?.name}
                       </Typography>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </>
