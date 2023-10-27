@@ -1,4 +1,4 @@
-import { Keypair } from "@solana/web3.js"
+import { Keypair, PublicKey } from "@solana/web3.js"
 import * as bs58 from "bs58"
 
 export function loadMasterWallet() {
@@ -22,4 +22,12 @@ export function validateSolanaPublicKeys(csvData: Array<any>): string[] {
       return testResult ? wallet : testResult
     })
     .filter(Boolean)
+}
+
+export function isPublicKey(val: string) {
+  try {
+    return !!new PublicKey(val)
+  } catch (error) {
+    return false
+  }
 }

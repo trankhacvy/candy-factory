@@ -1,11 +1,11 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { PromisePool } from '@supercharge/promise-pool';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindOptionsOrder, Like, Raw, Repository } from 'typeorm';
+import { DeepPartial, FindOptionsOrder, Raw, Repository } from 'typeorm';
 import { Drop, DropWalletsSource } from './entities/drop.entity';
 import { CreateDropDto } from './dto/create-drop.dto';
 import { IPaginationOptions } from 'src/utils/types/pagination-options';
@@ -18,25 +18,20 @@ import {
 } from './entities/drop-transaction.entity';
 import { MintNFTService } from 'src/shared/services/nft-mint-service';
 import { ConnectionService } from 'src/shared/services/connection-service';
-import { PublicKey } from '@solana/web3.js';
-import {
-  MetadataArgs,
-  TokenProgramVersion,
-  TokenStandard,
-} from '@metaplex-foundation/mpl-bubblegum';
-import { CreateMetadataAccountArgsV3 } from '@metaplex-foundation/mpl-token-metadata';
 import { User } from 'src/users/entities/user.entity';
-import { Order, PageOptionsDto } from 'src/utils/dtos/page-options.dto';
+import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 import { PageMetaDto } from 'src/utils/dtos/page-meta.dto';
 import { PageDto } from 'src/utils/dtos/page.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
-import { AllConfigType, AppConfig } from 'src/config/config.type';
+import { AllConfigType } from 'src/config/config.type';
 import { EstimatePriceDto } from './dto/estimate-price.dto';
 import { CollectionService } from 'src/shared/services/collection-service';
 import { roundNumber } from 'src/utils/number';
 import { EstimatePriceResponseDto } from './dto/estimate-price-response.dto';
+import { PythService } from 'src/shared/services/pyth-service';
+import { JOBS_QUEUE, JobTypes } from 'src/utils/job';
 
 @Injectable()
 export class DropsService {
@@ -49,8 +44,9 @@ export class DropsService {
     private audienceGroupsService: AudienceGroupsService,
     private connectionService: ConnectionService,
     private collectionService: CollectionService,
+    private pythService: PythService,
     private mintNFTService: MintNFTService,
-    @InjectQueue('airdrop') private readonly airdropQueue: Queue,
+    @InjectQueue(JOBS_QUEUE) private readonly airdropQueue: Queue,
     private configService: ConfigService<AllConfigType>,
   ) {}
 
@@ -73,7 +69,6 @@ export class DropsService {
     { name, nftId, groupId, collection, transactionId }: CreateDropDto,
     user: User,
   ): Promise<Drop> {
-    console.log({ groupId, collection });
     if (!groupId && !collection)
       throw new BadRequestException('You need provide groupId or collection');
 
@@ -97,12 +92,9 @@ export class DropsService {
         this.dropsRepository.create(dropInfo),
       );
 
-      this.airdropQueue.add({
-        type: 'load_holders',
-        payload: {
-          drop,
-          collection,
-        },
+      this.airdropQueue.add(JobTypes.AirdropToCollection, {
+        dropId: drop.id,
+        collection,
       });
     } else {
       const audiences = await this.audienceGroupsService.findAudiencesByGroup(
@@ -122,32 +114,6 @@ export class DropsService {
       this.createBulkDropTxs(drop, wallets);
     }
 
-    // const group = await this.audienceGroupsService.findOne({ id: groupId });
-
-    // const audiences = await this.audienceGroupsService.findAudiencesByGroup(
-    //   group.id,
-    // );
-
-    // const wallets = audiences.map((aud) => aud.wallet);
-
-    // const drop = await this.dropsRepository.save(
-    //   this.dropsRepository.create({
-    //     name,
-    //     nft,
-    //     user,
-    //     numOfNft: audiences.length,
-    //     mintedNft: 0,
-    //     ...(collection
-    //       ? { collection, walletsSource: DropWalletsSource.COLLECTION }
-    //       : {
-    //           groupId: groupId,
-    //           walletsSource: DropWalletsSource.GROUP,
-    //         }),
-    //   }),
-    // );
-
-    // this.createBulkDropTxs(drop, wallets);
-
     return drop;
   }
 
@@ -159,24 +125,39 @@ export class DropsService {
       const audiences =
         await this.audienceGroupsService.findAudiencesByGroup(groupId);
 
+      const priceInUSD = roundNumber(
+        this.configService.getOrThrow('solana.nftPrice', { infer: true }) *
+          audiences.length,
+      );
+
+      const priceInSol = await this.pythService.convertUSDToSol(priceInUSD);
+      console.log('priceInSol', priceInSol.toString());
+
+      if (priceInSol <= 0)
+        throw new InternalServerErrorException('Unknown error');
+
       return {
         totalWallets: audiences.length,
-        price: roundNumber(
-          this.configService.getOrThrow('solana.nftPrice', { infer: true }) *
-            audiences.length,
-        ),
+        price: roundNumber(priceInSol, 10 ** 5),
       };
     } else {
       const holders = await this.collectionService.loadHoldersOfCollection(
         collection!,
       );
 
+      const priceInUSD = roundNumber(
+        this.configService.getOrThrow('solana.nftPrice', { infer: true }) *
+          holders.length,
+      );
+
+      const priceInSol = await this.pythService.convertUSDToSol(priceInUSD);
+
+      if (priceInSol <= 0)
+        throw new InternalServerErrorException('Unknown error');
+
       return {
         totalWallets: holders.length,
-        price: roundNumber(
-          this.configService.getOrThrow('solana.nftPrice', { infer: true }) *
-            holders.length,
-        ),
+        price: roundNumber(priceInSol, 10 ** 5),
       };
     }
   }
@@ -299,16 +280,13 @@ export class DropsService {
   }
 
   async createBulkDropTxs(drop: Drop, wallets: string[]): Promise<boolean> {
-    const currentJob = await this.airdropQueue.getActiveCount();
-    console.log('===================? :', currentJob);
-
     // insert all wallets
     await this.dropTxsRepository.save(
       this.dropTxsRepository.create(
         wallets.map((wallet) => ({
           wallet,
           status: DropTxStatus.PROCESSING,
-          drop: drop,
+          drop,
         })),
       ),
     );
@@ -319,69 +297,16 @@ export class DropsService {
 
     const transactions = await this.findTransactions(drop.id);
 
-    console.log('transactions: ', transactions.length);
-
-    const payer = this.connectionService.feePayer;
-
-    const collectionMetadata: CreateMetadataAccountArgsV3 = {
-      data: {
-        name: nft.collectionName ?? '',
-        symbol: nft.collectionSymbol ?? '',
-        uri: nft.collectionMetadataUri ?? '',
-        sellerFeeBasisPoints: 0,
-        creators: [
-          {
-            address: payer.publicKey,
-            verified: false,
-            share: 100,
-          },
-        ],
-        collection: null,
-        uses: null,
-      },
-      isMutable: false,
-      collectionDetails: null,
-    };
-
-    console.log('collectionMetadata: ', collectionMetadata);
-
-    let collectionMint: PublicKey | null = null;
-    let metadataAccount: PublicKey | null = null;
-    let masterEditionAccount: PublicKey | null = null;
-
-    try {
-      let result = await this.mintNFTService.mintCollection(collectionMetadata);
-
-      collectionMint = result.mint;
-      metadataAccount = result.metadataAccount;
-      masterEditionAccount = result.masterEditionAccount;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-
-    if (!collectionMint || !metadataAccount || !masterEditionAccount)
-      return false;
-
-    console.log('Mint collection success');
-
     this.airdropQueue.addBulk(
-      transactions.map((tx, idx) => ({
+      transactions.map((tx) => ({
+        name: JobTypes.Airdrop,
         data: {
-          type: 'airdrop',
-          payload: {
-            nft,
-            drop,
-            tx,
-            collection: {
-              collectionMint,
-              metadataAccount,
-              masterEditionAccount,
-            },
-          },
+          nftId: nft.id,
+          dropId: drop.id,
+          dropTxId: tx.id,
         },
         opts: {
-          jobId: `aidrop_${tx.id}`,
+          jobId: `airdrop_${tx.id}`,
         },
       })),
     );
@@ -389,9 +314,7 @@ export class DropsService {
     return true;
   }
 
-  private async findDropWalletsFromCollection(drop: Drop, collection: string) {
-    if (drop.collection) {
-      const holders = [];
-    }
+  async increaseMintedNFT(id: number, count: number) {
+    return this.dropsRepository.increment({ id }, 'mintedNft', count);
   }
 }

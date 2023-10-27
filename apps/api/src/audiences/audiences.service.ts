@@ -1,6 +1,11 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Like, Repository } from 'typeorm';
+import { DeepPartial, Like, Raw, Repository } from 'typeorm';
 import { Audience } from './entities/audience.entity';
 import { CreateAudienceDto } from './dto/create-audience.dto';
 import { IPaginationOptions } from 'src/utils/types/pagination-options';
@@ -34,13 +39,9 @@ export class AudiencesService {
   }
 
   async bulkCreate(dto: CreateAudienceDto[]): Promise<Audience[]> {
-    console.log('check dto', dto);
     const group = await this.audienceGroupsService.findOne({
       id: dto[0].groupId,
     });
-
-    console.log('check group', group);
-    console.log('check dto', dto);
 
     return this.audiencesRepository.save(
       this.audiencesRepository.create(
@@ -65,7 +66,13 @@ export class AudiencesService {
   }
 
   async softDelete(id: Audience['id']): Promise<void> {
-    await this.audiencesRepository.softDelete(id);
+    const wallet = await this.findOne({ id });
+    if (!wallet) throw new NotFoundException('Wallet not found');
+
+    await Promise.all([
+      this.audiencesRepository.softDelete(id),
+      this.audienceGroupsService.decreaseAudience(wallet.groupId),
+    ]);
   }
 
   findManyWithPagination(
@@ -96,9 +103,10 @@ export class AudiencesService {
     dto: PageOptionsDto,
   ): Promise<PageDto<Audience>> {
     const [result, total] = await this.audiencesRepository.findAndCount({
-      // @ts-ignore
       where: {
-        wallet: Like('%' + dto.q?.toLowerCase() ?? '' + '%'),
+        wallet: Raw((alias) => `LOWER(${alias}) LIKE LOWER(:wallet)`, {
+          wallet: `%${dto.q}%`,
+        }),
         groupId: id,
       },
       order: { createdAt: dto.order },

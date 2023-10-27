@@ -8,25 +8,29 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindOptionsOrder, Raw, Repository } from 'typeorm';
-import { AudienceGroup } from './entities/audience-group.entity';
+import {
+  AudienceGroup,
+  WalletsGroupStatus,
+} from './entities/audience-group.entity';
 import {
   CreateAudienceGroupDto,
   CreateAudienceGroupWithCsvDto,
   CreateAudienceGroupWithCollectionDto,
 } from './dto/create-group.dto';
-import { IPaginationOptions } from 'src/utils/types/pagination-options';
 import { EntityCondition } from 'src/utils/types/entity-condition.type';
 import { AudiencesService } from 'src/audiences/audiences.service';
 import { Audience } from 'src/audiences/entities/audience.entity';
 import { User } from 'src/users/entities/user.entity';
-import { initGroups, sampleWallets } from 'src/utils/wallet';
+import { initGroups } from 'src/utils/wallet';
 import { getCsvFileFromFileName } from 'src/utils/csv-helper';
 import { ICsvRecord } from 'src/utils/types/csv-record.type';
 import { isPublicKey } from 'src/utils/validators/is-public-key';
 import { PageOptionsDto } from 'src/utils/dtos/page-options.dto';
 import { PageDto } from 'src/utils/dtos/page.dto';
-import { CollectionService } from 'src/shared/services/collection-service';
 import { PageMetaDto } from 'src/utils/dtos/page-meta.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { JOBS_QUEUE, JobTypes } from 'src/utils/job';
 
 @Injectable()
 export class AudienceGroupsService {
@@ -35,7 +39,7 @@ export class AudienceGroupsService {
     private audienceGroupsRepository: Repository<AudienceGroup>,
     @Inject(forwardRef(() => AudiencesService))
     private audiencesService: AudiencesService,
-    private collectionService: CollectionService,
+    @InjectQueue(JOBS_QUEUE) private readonly jobsQueue: Queue,
   ) {}
 
   async create(
@@ -47,6 +51,7 @@ export class AudienceGroupsService {
         ...dto,
         numOfAudience: dto.audiences.length,
         user,
+        status: WalletsGroupStatus.FINISH,
       }),
     );
 
@@ -74,17 +79,14 @@ export class AudienceGroupsService {
         throw new UnprocessableEntityException('Invalid CSV file');
       }
 
-      console.log('results', results);
       const validRecords = results.filter((item) => isPublicKey(item.Wallets));
-      console.log('validRecords', validRecords);
-
-      // console.log('results', results);
 
       const group = await this.audienceGroupsRepository.save(
         this.audienceGroupsRepository.create({
           ...dto,
           numOfAudience: validRecords.length,
           user,
+          status: WalletsGroupStatus.FINISH,
         }),
       );
 
@@ -106,51 +108,23 @@ export class AudienceGroupsService {
     user: User,
   ): Promise<AudienceGroup> {
     try {
-      const wallets = await this.collectionService.loadHoldersOfCollection(
-        dto.collection,
-      );
-
       const group = await this.audienceGroupsRepository.save(
         this.audienceGroupsRepository.create({
           ...dto,
-          numOfAudience: wallets.length,
+          numOfAudience: 0,
           user,
         }),
       );
 
-      await this.audiencesService.bulkCreate(
-        wallets.map((record) => ({
-          wallet: record.address,
-          groupId: group.id,
-        })),
-      );
+      this.jobsQueue.add(JobTypes.WalletsGroup, {
+        groupId: group.id,
+        collection: dto.collection,
+      });
 
       return group;
     } catch (error: any) {
       throw new InternalServerErrorException(error?.message || 'Server error');
     }
-  }
-
-  async createDemo(
-    dto: CreateAudienceGroupDto,
-    user: User,
-  ): Promise<AudienceGroup> {
-    const group = await this.audienceGroupsRepository.save(
-      this.audienceGroupsRepository.create({
-        ...dto,
-        numOfAudience: sampleWallets.addresses.length,
-        user,
-      }),
-    );
-
-    await this.audiencesService.bulkCreate(
-      sampleWallets.addresses.map((wallet) => ({
-        wallet,
-        groupId: group.id,
-      })),
-    );
-
-    return group;
   }
 
   async initGroupsWallet(user: User): Promise<void> {
@@ -188,8 +162,11 @@ export class AudienceGroupsService {
   }
 
   async softDelete(id: AudienceGroup['id']): Promise<void> {
-    await this.findOne({ id });
-    await this.audienceGroupsRepository.softDelete(id);
+    const group = await this.audienceGroupsRepository.findOneOrFail({
+      where: { id },
+      relations: ['members'],
+    });
+    await this.audienceGroupsRepository.softRemove(group);
   }
 
   async findManyWithPagination(

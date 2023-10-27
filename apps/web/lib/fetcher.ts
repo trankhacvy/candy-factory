@@ -1,3 +1,5 @@
+import { signOut } from "next-auth/react"
+
 export class FetcherError extends Error {
   public statusCode: number
   public res: Response
@@ -18,7 +20,16 @@ export default async function fetcher<JSON = any>(input: RequestInfo, init?: Req
       cache: "no-store",
     })
     if (res.ok) {
+      if (res.status === 204) {
+        return {
+          statusCode: 204,
+        } as JSON
+      }
       return (await res.json()) as JSON
+    }
+
+    if (res.status === 401) {
+      signOut()
     }
 
     const error = new FetcherError(res.statusText, res.status, res)

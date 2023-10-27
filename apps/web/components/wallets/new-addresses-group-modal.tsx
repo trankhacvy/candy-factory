@@ -7,6 +7,7 @@ import CSVReader from "react-csv-reader"
 import { useForm, useFormContext } from "react-hook-form"
 import { mutate } from "swr"
 import * as z from "zod"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -25,7 +26,6 @@ import { Input } from "../ui/input"
 import { useToast } from "../ui/toast"
 import api from "@/lib/api"
 import { useSession } from "next-auth/react"
-import { Typography } from "../ui/typography"
 import { useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { useRouter } from "next/navigation"
@@ -148,7 +148,7 @@ export const NewAddressesGroupModal = ({ trigger, isOpen, onOpenChange }: NewAdd
     <>
       <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
         <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
-        <AlertDialogContent className="max-h-[calc(100vh-80px)] max-w-lg overflow-auto">
+        <AlertDialogContent className="max-h-[calc(100vh-80px)] max-w-xl overflow-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>New wallets group</AlertDialogTitle>
           </AlertDialogHeader>
@@ -207,6 +207,23 @@ const GroupTabs = ({ value, onValueChange }: any) => {
         <TabsTrigger value="collection">Load collection holders</TabsTrigger>
       </TabsList>
       <TabsContent value="csv">
+        <Alert variant="warning" className="mb-5">
+          <AlertIcon>
+            <AlertTriangleIcon />
+          </AlertIcon>
+          <AlertDescription>
+            Upload a CSV. The first row should be the headers of the table, and your headers should not include any
+            special characters other than hyphens (<code>-</code>) or underscores(<code>_</code>)
+            <a
+              className="font-semibold underline block"
+              href="https://gist.githubusercontent.com/trankhacvy/ddf5cc9aa3085873e9324ca728b43372/raw/7b728e01ef06c5d3d935b5eb49f19fafcdb6f769/SampleWallet.csv"
+              target="_blank"
+            >
+              Sample file
+            </a>
+          </AlertDescription>
+        </Alert>
+
         <UploadCSVTab />
       </TabsContent>
       <TabsContent value="collection">
@@ -226,7 +243,7 @@ const UploadCSVTab = () => {
       control={control}
       name="csv"
       render={({ field }) => (
-        <FormItem>
+        <FormItem className="space-y-5">
           <FormControl>
             <label className="flex relative flex-col cursor-pointer items-center px-4 py-6 bg-white border border-gray-500/20 border-dashed p-6 rounded-2xl">
               <svg className="w-8 h-8" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -266,31 +283,9 @@ const UploadCSVTab = () => {
             </label>
           </FormControl>
 
-          {wallets && wallets.length > 0 && (
-            <Typography className="font-semibold" level="body4" as="p" color="info">
-              Loaded {wallets.length} wallets
-            </Typography>
-          )}
-          <FormMessage />
+          {wallets && wallets.length > 0 && <WalletsTable wallets={wallets} />}
 
-          <Alert className="mt-5" variant="warning">
-            <AlertIcon>
-              <AlertTriangleIcon />
-            </AlertIcon>
-            <div>
-              <AlertDescription>
-                Upload a CSV. The first row should be the headers of the table, and your headers should not include any
-                special characters other than hyphens (<code>-</code>) or underscores(<code>_</code>)
-                <a
-                  className="font-semibold underline block"
-                  href="https://gist.githubusercontent.com/trankhacvy/ddf5cc9aa3085873e9324ca728b43372/raw/7b728e01ef06c5d3d935b5eb49f19fafcdb6f769/SampleWallet.csv"
-                  target="_blank"
-                >
-                  Sample file
-                </a>
-              </AlertDescription>
-            </div>
-          </Alert>
+          <FormMessage />
         </FormItem>
       )}
     />
@@ -314,5 +309,27 @@ const LoadCollectionHolders = () => {
         </FormItem>
       )}
     />
+  )
+}
+
+const WalletsTable = ({ wallets }: { wallets: string[] }) => {
+  return (
+    <div className="max-h-[180px] overflow-auto border border-gray-500/24 rounded-xl">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{`${wallets.length} Wallets`}</TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {wallets.map((wallet) => (
+            <TableRow>
+              <TableCell className="p-2">{wallet}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

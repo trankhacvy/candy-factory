@@ -2,10 +2,11 @@
 
 import dayjs from "dayjs"
 import { useFetchContactGroups } from "@/hooks/use-fetch-contact-groups"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import {
   ColumnDef,
   ColumnFiltersState,
+  PaginationState,
   Table,
   getCoreRowModel,
   getPaginationRowModel,
@@ -17,11 +18,36 @@ import { Input } from "../ui/input"
 import Link from "next/link"
 import { Typography } from "../ui/typography"
 import { DataTableRowActions } from "../ui/data-table/row-action"
+import { PageOptionRequest } from "@/types"
+import useDebounce from "@/hooks/use-debounce"
+import { formatNumber } from "@/utils/number"
+
+const useDebouncedSearchValue = (columnFilters: ColumnFiltersState) => {
+  const searchValue = useMemo(() => columnFilters.find((filter) => filter.id === "name")?.value ?? "", [columnFilters])
+
+  return useDebounce<string>(searchValue as string, 300)
+}
 
 export function WalletsGroupTable() {
-  const { data, isLoading } = useFetchContactGroups()
-
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 20,
+  })
+
+  const searchText = useDebouncedSearchValue(columnFilters)
+
+  const pageRequest = useMemo(
+    () =>
+      ({
+        page: pageIndex + 1,
+        take: pageSize,
+        q: searchText,
+      }) as PageOptionRequest,
+    [pageIndex, pageSize, searchText]
+  )
+
+  const { data, isLoading } = useFetchContactGroups(pageRequest)
 
   const columns: ColumnDef<AudienceGroup>[] = [
     {
@@ -39,7 +65,10 @@ export function WalletsGroupTable() {
     },
     {
       accessorKey: "numOfAudience",
-      header: "Num of address",
+      header: "Num of wallets",
+      cell: ({ row }) => {
+        return <>{formatNumber(row.getValue("numOfAudience"))}</>
+      },
     },
     {
       accessorKey: "createdAt",

@@ -1,4 +1,4 @@
-import { WalletsGroupTable } from "@/components/wallets/wallets-group-table"
+import { WalletsGroupTable } from "@/components/wallets/group-table"
 import { NewWalletButton } from "@/components/wallets/new-wallet-button"
 import { Typography } from "@/components/ui/typography"
 

@@ -21,7 +21,9 @@ export class Audience extends EntityHelper {
   @Column({ type: String })
   wallet: string;
 
-  @ManyToOne(() => AudienceGroup, (group) => group.members)
+  @ManyToOne(() => AudienceGroup, (group) => group.members, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'group_id' })
   group: AudienceGroup;
 

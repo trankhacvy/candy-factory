@@ -23,6 +23,9 @@ import { TransformInterceptor } from './utils/interceptors/response-transform.in
 import { BullModule } from '@nestjs/bull';
 import { AllConfigType } from './config/config.type';
 import redisConfig from './config/redis.config';
+import { SetupModule } from './setup/SetupModule';
+import { JobsModule } from './jobs/Jobs.module';
+import { JOBS_QUEUE } from './utils/job';
 
 @Module({
   imports: [
@@ -48,6 +51,8 @@ import redisConfig from './config/redis.config';
     SharedModule,
     AuthModule,
     StatModule,
+    SetupModule,
+    JobsModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService<AllConfigType>) => {

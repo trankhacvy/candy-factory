@@ -39,8 +39,6 @@ export const authOptions: NextAuthOptions = {
 
           const response = await api.login(wallet)
 
-          // console.log("login response: ", { response })
-
           return response
         } catch (e) {
           console.log("[authorize] error", e)

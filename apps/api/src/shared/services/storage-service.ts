@@ -49,8 +49,8 @@ export class StorageService {
           );
           console.log('balance: ', balance.toNumber());
           console.log('minimumFunds: ', minimumFunds.toNumber());
-          if (balance.isLessThan(minimumFunds)) {
-            await bundlr.fund(minimumFunds);
+          if (balance.isLessThanOrEqualTo(minimumFunds)) {
+            await bundlr.fund(minimumFunds.multipliedBy(10));
           }
 
           // Retry signing and uploading after funding
@@ -113,14 +113,22 @@ export class StorageService {
           );
           console.log('balance: ', balance);
           console.log('minimumFunds: ', minimumFunds);
-          if (balance.isLessThan(minimumFunds)) {
-            await bundlr.fund(minimumFunds);
+          console.log('need fund: xxxx');
+          console.log('need fund: ', balance.isLessThanOrEqualTo(minimumFunds));
+
+          if (balance.isLessThanOrEqualTo(minimumFunds)) {
+            console.log('funding');
+            await bundlr.fund(minimumFunds.multipliedBy(10));
+            // @ts-ignore
+            await new Promise((resolve) => setTimeout(() => resolve(), 200));
           }
 
           // Retry signing and uploading after funding
+          console.log('resign');
           await transaction.sign();
           await transaction.upload();
         } else {
+          console.error(e);
           throw e;
         }
       }

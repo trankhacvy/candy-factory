@@ -21,10 +21,12 @@ import {
   computeCreatorHash,
   computeDataHash,
   createMintToCollectionV1Instruction,
+  getLeafAssetId,
 } from '@metaplex-foundation/mpl-bubblegum';
 import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
+  deserializeChangeLogEventV1,
 } from '@solana/spl-account-compression';
 import {
   PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID,
@@ -33,11 +35,29 @@ import {
   createCreateMasterEditionV3Instruction,
   createSetCollectionSizeInstruction,
 } from '@metaplex-foundation/mpl-token-metadata';
+import base58 from 'bs58';
 import { ConnectionService } from './connection-service';
+import { ShyftSdk } from '@shyft-to/js';
+import { ConfigService } from '@nestjs/config';
+import { AllConfigType } from 'src/config/config.type';
 
 @Injectable()
 export class MintNFTService {
-  constructor(private connectionService: ConnectionService) {}
+  shyft: ShyftSdk;
+
+  constructor(
+    private connectionService: ConnectionService,
+    private configService: ConfigService<AllConfigType>,
+  ) {
+    this.shyft = new ShyftSdk({
+      apiKey: this.configService.getOrThrow('solana.shyftApikey', {
+        infer: true,
+      }),
+      network: this.configService.getOrThrow('solana.cluster', {
+        infer: true,
+      }),
+    });
+  }
 
   async mintCollection(metadata: CreateMetadataAccountArgsV3) {
     // create and initialize the SPL token mint
@@ -356,22 +376,6 @@ export class MintNFTService {
       collection: { key: collectionMint, verified: false },
     });
 
-    /**
-     * compute the data and creator hash for display in the console
-     *
-     * note: this is not required to do in order to mint new compressed nfts
-     * (since it is performed on chain via the Bubblegum program)
-     * this is only for demonstration
-     */
-    // const computedDataHash = new PublicKey(
-    //   computeDataHash(metadataArgs),
-    // ).toBase58();
-    // const computedCreatorHash = new PublicKey(
-    //   computeCreatorHash(metadataArgs.creators),
-    // ).toBase58();
-    // console.log('computedDataHash:', computedDataHash);
-    // console.log('computedCreatorHash:', computedCreatorHash);
-
     /*
     Add a single mint to collection instruction 
     ---
@@ -435,16 +439,60 @@ export class MintNFTService {
         },
       );
 
-      console.log('\nSuccessfully minted the compressed NFT!');
-      //   console.log(explorerURL({ txSignature }));'
+      const txInfo = await connection.getTransaction(txSignature, {
+        maxSupportedTransactionVersion: 0,
+      });
 
-      // find mint
-      const totalNftMintedCount = (
-        await getTreeNonceCount(connection, treeAddress)
-      ).toNumber();
-      const mint = getAssetPDA(treeAddress, totalNftMintedCount).toBase58();
+      // find the index of the bubblegum instruction
+      const relevantIndex =
+        txInfo!.transaction.message.compiledInstructions.findIndex(
+          (instruction) => {
+            return (
+              txInfo?.transaction.message.staticAccountKeys[
+                instruction.programIdIndex
+              ].toBase58() === 'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY'
+            );
+          },
+        );
 
-      return { mint, signature: txSignature };
+      // locate the no-op inner instructions called via cpi from bubblegum
+      const relevantInnerIxs = txInfo!.meta?.innerInstructions?.[
+        relevantIndex
+      ].instructions.filter((instruction) => {
+        return (
+          txInfo?.transaction.message.staticAccountKeys[
+            instruction.programIdIndex
+          ].toBase58() === 'noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'
+        );
+      });
+
+      // when no valid noop instructions are found, throw an error
+      if (!relevantInnerIxs || relevantInnerIxs.length == 0)
+        throw Error('Unable to locate valid noop instructions');
+
+      // locate the asset index by attempting to locate and parse the correct `relevantInnerIx`
+      let assetIndex: number | undefined = undefined;
+      // note: the `assetIndex` is expected to be at position `1`, and normally expect only 2 `relevantInnerIx`
+      for (let i = relevantInnerIxs.length - 1; i > 0; i--) {
+        try {
+          const changeLogEvent = deserializeChangeLogEventV1(
+            Buffer.from(base58.decode(relevantInnerIxs[i]?.data!)),
+          );
+
+          // extract a successful changelog index
+          assetIndex = changeLogEvent?.index;
+        } catch (__) {
+          // do nothing, invalid data is handled just after the for loop
+        }
+      }
+
+      // when no `assetIndex` was found, throw an error
+      if (typeof assetIndex == 'undefined')
+        throw Error('Unable to locate the newly minted assetId ');
+
+      const assetId = await getLeafAssetId(treeAddress, new BN(assetIndex));
+
+      return { mint: assetId, signature: txSignature };
     } catch (err) {
       console.error('\nFailed to mint compressed NFT:', err);
       throw err;

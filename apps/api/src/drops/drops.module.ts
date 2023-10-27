@@ -3,13 +3,12 @@ import { DropsService } from './drops.service';
 import { DropsController } from './drops.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Drop } from './entities/drop.entity';
-import { IsExist } from 'src/utils/validators/is-exists.validator';
-import { IsNotExist } from 'src/utils/validators/is-not-exists.validator';
 import { DropTransaction } from './entities/drop-transaction.entity';
 import { NFTsModule } from 'src/nfts/nfts.module';
 import { AudienceGroupsModule } from 'src/audience-groups/audience-groups.module';
 import { BullModule } from '@nestjs/bull';
-import { AirdropProcessor } from './airdrop.process';
+import { DropTransactionsService } from './drop-transactions.service';
+import { JOBS_QUEUE } from 'src/utils/job';
 
 @Module({
   imports: [
@@ -17,11 +16,11 @@ import { AirdropProcessor } from './airdrop.process';
     NFTsModule,
     AudienceGroupsModule,
     BullModule.registerQueue({
-      name: 'airdrop',
+      name: JOBS_QUEUE,
     }),
   ],
   controllers: [DropsController],
-  providers: [IsExist, IsNotExist, DropsService, AirdropProcessor],
-  exports: [DropsService],
+  providers: [DropsService, DropTransactionsService],
+  exports: [DropsService, DropTransactionsService],
 })
 export class DropsModule {}

@@ -1,10 +1,10 @@
 import type { SiteConfig } from "@/types"
 
 export const siteConfig: SiteConfig = {
-  name: "Candy Factory",
-  description: "The easiest way to airdrop cNFTs at scale",
-  url: "https://candy-factory-opos.vercel.app/",
-  ogImage: "https://candy-factory-opos.vercel.app/og.jpg",
+  name: "cNFT Drops",
+  description: "Everything you need for launching a cNFT airdrop",
+  url: "https://www.cnftdrops.xyz/",
+  ogImage: "https://www.cnftdrops.xyz/og.jpg",
   links: {
     twitter: "",
     github: "",

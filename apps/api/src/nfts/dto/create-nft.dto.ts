@@ -1,10 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsOptional, MaxLength } from 'class-validator';
-import { User } from 'src/users/entities/user.entity';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
+import { AttributeDto } from './attribute.dto';
+import { CreatorDto } from './creator.dto';
 
 export class CreateNFTDto {
   @ApiProperty({ example: 'My awesome NFT' })
+  @IsNotEmpty()
   @MaxLength(32)
   name: string;
 
@@ -13,6 +23,7 @@ export class CreateNFTDto {
   description: string;
 
   @MaxLength(10)
+  @IsNotEmpty()
   @ApiProperty({ example: 'CNFT' })
   symbol: string;
 
@@ -24,29 +35,21 @@ export class CreateNFTDto {
   })
   image: Express.Multer.File[];
 
-  @ApiProperty({
-    title: 'attributes',
-    type: String,
-    description: 'Attributes associated to this NFT',
-    example: [{ trait_type: 'edification', value: '100' }],
-  })
   @IsOptional()
   @Transform(({ value }) => JSON.parse(value), { toClassOnly: true })
-  attributes: {
-    trait_type: string;
-    value: string;
-  }[];
+  attributes: AttributeDto[];
 
   @IsOptional()
-  @ApiProperty({ example: '0x00' })
-  creator?: string;
+  @Transform(({ value }) => JSON.parse(value), { toClassOnly: true })
+  creators: CreatorDto[];
 
   @IsOptional()
   @ApiProperty({ example: 'http://google.com' })
   externalUrl?: string;
 
+  @ValidateIf((o) => !o.collectionId)
+  @IsNotEmpty()
   @MaxLength(32)
-  @IsOptional()
   @ApiProperty({ example: 'My awesome collection' })
   collectionName?: string;
 
@@ -55,22 +58,33 @@ export class CreateNFTDto {
   @ApiProperty({ example: 'My Collection' })
   collectionDescription?: string;
 
+  @ValidateIf((o) => !o.collectionId)
   @MaxLength(10)
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty({ example: 'CNFT' })
   collectionSymbol?: string;
 
+  @ValidateIf((o) => !o.collectionId)
   @ApiProperty({
     name: 'collectionImage',
     description: 'Image that you would want to turn into collection',
     type: String,
     format: 'binary',
+    nullable: true,
   })
-  collectionImage: Express.Multer.File[];
+  collectionImage?: Express.Multer.File[];
 
   @IsOptional()
   @ApiProperty({ example: 'http://google.com', nullable: true })
   collectionExternalUrl?: string;
 
-  userId: User['id'];
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  collectionId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  royalty?: number;
 }
