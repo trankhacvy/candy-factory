@@ -31,6 +31,7 @@ import { CollectionService } from 'src/shared/services/collection-service';
 import { roundNumber } from 'src/utils/number';
 import { EstimatePriceResponseDto } from './dto/estimate-price-response.dto';
 import { PythService } from 'src/shared/services/pyth-service';
+import { JOBS_QUEUE, JobTypes } from 'src/utils/job';
 
 @Injectable()
 export class DropsService {
@@ -45,7 +46,7 @@ export class DropsService {
     private collectionService: CollectionService,
     private pythService: PythService,
     private mintNFTService: MintNFTService,
-    @InjectQueue('airdrop') private readonly airdropQueue: Queue,
+    @InjectQueue(JOBS_QUEUE) private readonly airdropQueue: Queue,
     private configService: ConfigService<AllConfigType>,
   ) {}
 
@@ -68,7 +69,6 @@ export class DropsService {
     { name, nftId, groupId, collection, transactionId }: CreateDropDto,
     user: User,
   ): Promise<Drop> {
-    console.log({ groupId, collection });
     if (!groupId && !collection)
       throw new BadRequestException('You need provide groupId or collection');
 
@@ -92,12 +92,9 @@ export class DropsService {
         this.dropsRepository.create(dropInfo),
       );
 
-      this.airdropQueue.add({
-        type: 'load_holders',
-        payload: {
-          drop,
-          collection,
-        },
+      this.airdropQueue.add(JobTypes.AirdropToCollection, {
+        dropId: drop.id,
+        collection,
       });
     } else {
       const audiences = await this.audienceGroupsService.findAudiencesByGroup(
@@ -289,7 +286,7 @@ export class DropsService {
         wallets.map((wallet) => ({
           wallet,
           status: DropTxStatus.PROCESSING,
-          drop: drop,
+          drop,
         })),
       ),
     );
@@ -297,38 +294,27 @@ export class DropsService {
     const nft = await this.nftsService.findOne({
       id: drop.nftId,
     });
-    console.log('nft', nft);
-    if (nft.isCollection || !nft.collectionId)
-      throw new InternalServerErrorException('Invalid NFT');
 
-    const collection = await this.nftsService.findOne({
-      id: nft.collectionId,
-    });
-    console.log('collection', collection);
     const transactions = await this.findTransactions(drop.id);
 
     this.airdropQueue.addBulk(
       transactions.map((tx) => ({
+        name: JobTypes.Airdrop,
         data: {
-          type: 'airdrop',
-          payload: {
-            nft,
-            drop,
-            tx,
-            collection: {
-              collectionMint: collection.collectionAddress,
-              metadataAccount: collection.collectionKeys?.metadataAccount,
-              masterEditionAccount:
-                collection.collectionKeys?.masterEditionAccount,
-            },
-          },
+          nftId: nft.id,
+          dropId: drop.id,
+          dropTxId: tx.id,
         },
         opts: {
-          jobId: `aidrop_${tx.id}`,
+          jobId: `airdrop_${tx.id}`,
         },
       })),
     );
 
     return true;
+  }
+
+  async increaseMintedNFT(id: number, count: number) {
+    return this.dropsRepository.increment({ id }, 'mintedNft', count);
   }
 }

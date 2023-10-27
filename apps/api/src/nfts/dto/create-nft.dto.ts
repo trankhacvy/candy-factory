@@ -10,6 +10,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { AttributeDto } from './attribute.dto';
+import { CreatorDto } from './creator.dto';
 
 export class CreateNFTDto {
   @ApiProperty({ example: 'My awesome NFT' })
@@ -38,20 +39,9 @@ export class CreateNFTDto {
   @Transform(({ value }) => JSON.parse(value), { toClassOnly: true })
   attributes: AttributeDto[];
 
-  @ApiProperty({
-    title: 'creators',
-    type: String,
-    description: 'Attributes associated to this NFT',
-    example: [
-      { wallet: 'Brx4nDtUuV9JTMSAUbJjn34jYVTVKeFE3v87qF8rDrkt', share: 100 },
-    ],
-  })
   @IsOptional()
   @Transform(({ value }) => JSON.parse(value), { toClassOnly: true })
-  creators: {
-    wallet: string;
-    share: number;
-  }[];
+  creators: CreatorDto[];
 
   @IsOptional()
   @ApiProperty({ example: 'http://google.com' })

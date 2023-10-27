@@ -3,7 +3,7 @@ import { ConnectionService } from 'src/shared/services/connection-service';
 import { Metaplex, keypairIdentity } from '@metaplex-foundation/js';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from 'src/config/config.type';
-import { initNFT } from 'src/utils/wallet';
+import { initNFT, initNFTProduction } from 'src/utils/wallet';
 import { NFTsService } from 'src/nfts/nfts.service';
 import { User } from 'src/users/entities/user.entity';
 import { AudienceGroupsService } from 'src/audience-groups/audience-groups.service';
@@ -20,35 +20,42 @@ export class SetupService {
   ) {}
 
   async initAccount(user: User) {
+    const initData =
+      this.configService.getOrThrow('solana.cluster', {
+        infer: true,
+      }) === 'devnet'
+        ? initNFT
+        : initNFTProduction;
+
     const collection = await this.nftsService.createRaw({
-      name: initNFT.collectionName,
-      symbol: initNFT.collectionSymbol,
-      description: initNFT.collectionDescription,
-      image: initNFT.collectionImage,
-      metadataUri: initNFT.collectionMetadataUri,
-      externalUrl: initNFT.collectionExternalUrl,
+      name: initData.collectionName,
+      symbol: initData.collectionSymbol,
+      description: initData.collectionDescription,
+      image: initData.collectionImage,
+      metadataUri: initData.collectionMetadataUri,
+      externalUrl: initData.collectionExternalUrl,
       isCollection: true,
-      attributes: initNFT.attributes,
+      attributes: initData.attributes,
       creators: [],
       userId: user.id,
       royalty: 0,
-      collectionAddress: initNFT.mintAddress,
+      collectionAddress: initData.mintAddress,
       collectionKeys: {
-        tokenAccount: initNFT.tokenAddress,
-        masterEditionAccount: initNFT.masterEditionAddress,
-        metadataAccount: initNFT.metadataAddress,
+        tokenAccount: initData.tokenAddress,
+        masterEditionAccount: initData.masterEditionAddress,
+        metadataAccount: initData.metadataAddress,
       },
     });
 
     await this.nftsService.createRaw({
-      name: initNFT.name,
-      symbol: initNFT.symbol,
-      description: initNFT.description,
-      image: initNFT.collectionImage,
-      metadataUri: initNFT.metadataUri,
-      externalUrl: initNFT.externalUrl,
+      name: initData.name,
+      symbol: initData.symbol,
+      description: initData.description,
+      image: initData.collectionImage,
+      metadataUri: initData.metadataUri,
+      externalUrl: initData.externalUrl,
       isCollection: false,
-      attributes: initNFT.attributes,
+      attributes: initData.attributes,
       creators: [],
       userId: user.id,
       royalty: 0,

@@ -428,13 +428,6 @@ export class MintNFTService {
       const tx = new Transaction().add(...mintIxs);
       tx.feePayer = payer.publicKey;
 
-      // find mint
-      const totalNftMintedCount = (
-        await getTreeNonceCount(connection, treeAddress)
-      ).toNumber();
-
-      const mint = getAssetPDA(treeAddress, totalNftMintedCount).toBase58();
-
       // send the transaction to the cluster
       const txSignature = await sendAndConfirmTransaction(
         connection,

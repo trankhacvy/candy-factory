@@ -7314,3 +7314,38 @@ export const initNFT = {
   metadataAddress: 'BJ3mtPdWPT84GrzddttYteCw94iMmdJJrYuYJgqec381',
   tokenAddress: 'EVTKuuZnvDgTac786VuaYefZKm9FgKrZj8CA9d32MRdz',
 };
+
+export const initNFTProduction = {
+  name: 'Welcome to cNFT Drops',
+  description: 'NICE TO MEET YOU',
+  symbol: 'CD',
+  image:
+    'https://nftstorage.link/ipfs/bafybeiavzgsi4t6ixweirvgi5cpfq2uc6k6lo5hoyl5svhmmeg6w27rx44',
+  metadataUri:
+    'https://nftstorage.link/ipfs/bafkreih7xcpdxr6tedwiocqqvdukkjwt4sseshnsvz3zox66osuqzk5moa',
+  externalUrl: 'https://www.cnftdrops.xyz',
+  attributes: [
+    {
+      value: 'sample',
+      trait_type: 'type',
+    },
+  ],
+  collectionName: 'Welcome to cNFT Drops',
+  collectionDescription: 'NICE TO MEET YOU',
+  collectionSymbol: 'CD',
+  collectionImage:
+    'https://nftstorage.link/ipfs/bafybeiavzgsi4t6ixweirvgi5cpfq2uc6k6lo5hoyl5svhmmeg6w27rx44',
+  collectionMetadataUri:
+    'https://nftstorage.link/ipfs/bafkreih7xcpdxr6tedwiocqqvdukkjwt4sseshnsvz3zox66osuqzk5moa',
+  collectionExternalUrl: 'https://www.cnftdrops.xyz',
+  mintAddress: '8bUWVrMWwXs9oPYvaoUNDDcPkgozvuSBDDxMt12DL51p',
+  masterEditionAddress: 'Cosv2Aid89CjiViv8dp4PZi6QPcn6nESCggTyjTNrpKT',
+  metadataAddress: 'EPC51YekvcRrYgTcQv9HnafA7jqMHiEfLi2v3BDiLnKD',
+  tokenAddress: 'Bztbb26HGf8kzUETQicBEjUNAEBsUNUYJsfpWpcsWS1P',
+};
+
+// api:dev: response:  66sfWbk2Vxb5Wyn2dY9H6RN744pbUftkGTy3N6ehszLQta5UmRQYqS4WaUK1Lv8yz9r9K7Wrd4o4H96yt1U6VVze
+// api:dev: mintAddress:  8bUWVrMWwXs9oPYvaoUNDDcPkgozvuSBDDxMt12DL51p
+// api:dev: masterEditionAddress:  Cosv2Aid89CjiViv8dp4PZi6QPcn6nESCggTyjTNrpKT
+// api:dev: metadataAddress:  EPC51YekvcRrYgTcQv9HnafA7jqMHiEfLi2v3BDiLnKD
+// api:dev: tokenAddress:  Bztbb26HGf8kzUETQicBEjUNAEBsUNUYJsfpWpcsWS1P

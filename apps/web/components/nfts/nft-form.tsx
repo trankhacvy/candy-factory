@@ -72,7 +72,7 @@ export const nftFormSchema = z.object({
   creators: z
     .array(
       z.object({
-        wallet: z
+        address: z
           .string({ required_error: "This field is required." })
           .trim()
           .min(1, "This field is required.")
@@ -89,10 +89,10 @@ export const nftFormSchema = z.object({
     .optional()
     .superRefine((values, ctx) => {
       if (values) {
-        const hasInvalidWallet = values.some((val) => !isPublicKey(val.wallet))
+        const hasInvalidWallet = values.some((val) => !isPublicKey(val.address))
         if (hasInvalidWallet) {
           values.forEach((val, idx) => {
-            if (!isPublicKey(val.wallet)) {
+            if (!isPublicKey(val.address)) {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: `Invalid wallet address`,
@@ -103,20 +103,20 @@ export const nftFormSchema = z.object({
           return
         }
 
-        const wallets = values.map((val) => val.wallet)
-        const uniqueWallets = Array.from(new Set(values.map((val) => val.wallet)))
+        const wallets = values.map((val) => val.address)
+        const uniqueWallets = Array.from(new Set(values.map((val) => val.address)))
 
         if (uniqueWallets.length < wallets.length) {
           const uniqueWalletsArr: string[] = []
           values.forEach((value, index) => {
-            if (uniqueWalletsArr.includes(value.wallet)) {
+            if (uniqueWalletsArr.includes(value.address)) {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: `All addresses must be unique`,
                 path: [index, "wallet"],
               })
             } else {
-              uniqueWalletsArr.push(value.wallet)
+              uniqueWalletsArr.push(value.address)
             }
           })
 
@@ -258,7 +258,7 @@ export function NewNFTForm() {
         royalty: 0,
         creators: [
           {
-            wallet: session.user.wallet,
+            address: session.user.wallet,
             share: 100,
           },
         ],
@@ -566,7 +566,7 @@ export function NewNFTForm() {
                     <div className="flex w-full items-start gap-6">
                       <FormField
                         control={form.control}
-                        name={`creators.${index}.wallet`}
+                        name={`creators.${index}.address`}
                         render={({ field }) => (
                           <FormItem className="w-full">
                             <FormLabel>Wallet</FormLabel>
@@ -621,7 +621,7 @@ export function NewNFTForm() {
                   onClick={(event) => {
                     event.stopPropagation()
                     event.preventDefault()
-                    appendCreator({ wallet: "", share: 0 })
+                    appendCreator({ address: "", share: 0 })
                   }}
                   size="sm"
                   endDecorator={<PlusIcon />}

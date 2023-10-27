@@ -57,7 +57,7 @@ export class NFT extends EntityHelper {
     default: () => "'[]'",
     nullable: false,
   })
-  creators?: Array<{ creator: string; share: number }>;
+  creators?: Array<{ address: string; share: number }>;
 
   @OneToMany(() => Drop, (drop) => drop.nft)
   drops?: Drop[];

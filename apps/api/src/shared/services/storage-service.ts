@@ -49,7 +49,7 @@ export class StorageService {
           );
           console.log('balance: ', balance.toNumber());
           console.log('minimumFunds: ', minimumFunds.toNumber());
-          if (balance.isGreaterThanOrEqualTo(minimumFunds)) {
+          if (balance.isLessThanOrEqualTo(minimumFunds)) {
             await bundlr.fund(minimumFunds.multipliedBy(10));
           }
 

@@ -16,6 +16,12 @@ import { Audience } from 'src/audiences/entities/audience.entity';
 import { Drop } from 'src/drops/entities/drop.entity';
 import { User } from 'src/users/entities/user.entity';
 
+export enum WalletsGroupStatus {
+  IDLE = 1,
+  PROCESSING = 2,
+  FINISH = 3,
+}
+
 @Entity()
 export class AudienceGroup extends EntityHelper {
   @PrimaryGeneratedColumn()
@@ -35,6 +41,13 @@ export class AudienceGroup extends EntityHelper {
     cascade: true,
   })
   members: Audience[];
+
+  @Column({
+    type: 'enum',
+    enum: WalletsGroupStatus,
+    default: WalletsGroupStatus.IDLE,
+  })
+  status: WalletsGroupStatus;
 
   @OneToMany(() => Drop, (drop) => drop.group)
   drops?: Drop[];

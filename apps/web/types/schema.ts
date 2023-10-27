@@ -197,6 +197,11 @@ export interface AttributeDto {
   value: string
 }
 
+export interface CreatorDto {
+  address: string
+  share: number
+}
+
 export interface CreateNFTDto {
   /**
    * @maxLength 32
@@ -218,12 +223,6 @@ export interface CreateNFTDto {
    * @format binary
    */
   image: File
-  /**
-   * creators
-   * Attributes associated to this NFT
-   * @example [{"wallet":"Brx4nDtUuV9JTMSAUbJjn34jYVTVKeFE3v87qF8rDrkt","share":100}]
-   */
-  creators: string
   /** @example "http://google.com" */
   externalUrl?: string
   /**
@@ -249,6 +248,7 @@ export interface CreateNFTDto {
   /** @example "http://google.com" */
   collectionExternalUrl?: string | null
   attributes: AttributeDto[]
+  creators: CreatorDto[]
   collectionId?: number
   royalty?: number
 }

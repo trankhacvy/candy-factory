@@ -94,15 +94,6 @@ export class AudienceGroupsController {
     return this.audiencesService.createWithCollection(dto, user);
   }
 
-  @Post('/demo')
-  @HttpCode(HttpStatus.CREATED)
-  createDemo(
-    @AuthUser() user: User,
-    @Body() dto: CreateAudienceGroupDto,
-  ): Promise<AudienceGroup> {
-    return this.audiencesService.createDemo(dto, user);
-  }
-
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   update(

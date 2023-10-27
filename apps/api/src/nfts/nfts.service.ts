@@ -73,7 +73,7 @@ export class NFTsService {
               share: (dto.creators ?? []).length === 0 ? 100 : 0,
             },
             ...(dto.creators ?? []).map((item) => ({
-              address: new PublicKey(item.wallet ?? ''),
+              address: new PublicKey(item.address ?? ''),
               verified: false,
               share: Number(item.share),
             })),

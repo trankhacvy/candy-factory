@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -24,6 +25,13 @@ export class SetupController {
   @HttpCode(HttpStatus.OK)
   async getStat(@AuthUser() user) {
     await this.setupService.initAccount(user);
+    return { success: true };
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  async initNFT() {
+    await this.setupService.getStat();
     return { success: true };
   }
 }
