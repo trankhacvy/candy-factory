@@ -1,4 +1,4 @@
-import { BaseResponse } from "@/types"
+import { signOut } from "next-auth/react"
 
 export class FetcherError extends Error {
   public statusCode: number
@@ -26,6 +26,10 @@ export default async function fetcher<JSON = any>(input: RequestInfo, init?: Req
         } as JSON
       }
       return (await res.json()) as JSON
+    }
+
+    if (res.status === 401) {
+      signOut()
     }
 
     const error = new FetcherError(res.statusText, res.status, res)
