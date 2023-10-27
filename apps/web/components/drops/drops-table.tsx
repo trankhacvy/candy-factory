@@ -13,7 +13,6 @@ import {
 import { Drop } from "@/types/schema"
 import { DataTableRowActions } from "../ui/data-table/row-action"
 import { useState } from "react"
-import { DataTableToolbar } from "../ui/data-table/table-toolbar"
 import Link from "next/link"
 import { Typography } from "../ui/typography"
 import { useSession } from "next-auth/react"
@@ -74,12 +73,7 @@ export function DropsTable() {
 
   return (
     <div className="overflow-hidden rounded-2xl shadow-card">
-      <DataTable
-        loading={isLoading || !session}
-        table={table}
-        columns={columns.length}
-        toolbar={<DataTableToolbar table={table} />}
-      />
+      <DataTable loading={isLoading || !session} table={table} columns={columns.length} />
     </div>
   )
 }

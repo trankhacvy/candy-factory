@@ -13,7 +13,6 @@ import {
 import Image from "@/components/ui/image"
 import { NFT } from "@/types/schema"
 import { DataTable } from "@/components/ui/data-table/data-table"
-import { DataTableToolbar } from "@/components/ui/data-table/table-toolbar"
 import { Typography } from "@/components/ui/typography"
 import Link from "next/link"
 import { RowActions } from "./row-actions"
@@ -98,12 +97,7 @@ export function NFTTable() {
 
   return (
     <div className="overflow-hidden rounded-2xl shadow-card">
-      <DataTable
-        loading={isLoading}
-        table={table}
-        columns={columns.length}
-        toolbar={<DataTableToolbar table={table} />}
-      />
+      <DataTable loading={isLoading} table={table} columns={columns.length} />
     </div>
   )
 }

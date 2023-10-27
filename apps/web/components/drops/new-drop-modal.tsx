@@ -162,7 +162,7 @@ export const NewDropModal = ({ trigger }: NewDropModalProps) => {
                       <FormItem>
                         <FormLabel>Name</FormLabel>
                         <FormControl>
-                          <Input fullWidth placeholder="eg. New article release" {...field} />
+                          <Input fullWidth placeholder="Name" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -315,7 +315,7 @@ const CollectionTab = () => {
         <FormItem className="w-full">
           <FormLabel>Collection</FormLabel>
           <FormControl>
-            <Input fullWidth placeholder="eg. 0x00" {...field} />
+            <Input fullWidth placeholder="Collection address" {...field} />
           </FormControl>
           <FormMessage />
           <div className="grid w-full grid-cols-3 gap-4 pt-4">
@@ -401,8 +401,6 @@ const ReviewStep = ({ setIsOpen, nftId, groupId, collection }: any) => {
       setLoading(false)
     }
   }
-
-  console.log("isLoading && collection", isLoading && collection)
 
   return (
     <div className="space-y-5">
