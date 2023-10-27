@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site"
 import { Providers } from "./provider"
 require("@solana/wallet-adapter-react-ui/styles.css")
 
-const image = "./og-image.jpg"
+// const image = "./og-image.jpg"
 
 export const metadata: Metadata = {
   title: siteConfig.name,
@@ -24,16 +24,15 @@ export const metadata: Metadata = {
   openGraph: {
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [image],
+    // images: [image],
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [image],
+    // images: [image],
     creator: "@trankhacvy",
   },
-  metadataBase: new URL("https://writespace.fun"),
 }
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"] })
