@@ -58,22 +58,27 @@ const HeroSection = () => {
                 <LandingSignUpButton />
               </div>
             </div>
-            <div className="hidden py-8 mt-16 border-y border-gray-500/20 dark:border-gray-800 sm:flex justify-between gap-6">
-              <div className="text-center flex-1">
-                <h6 className="text-lg font-semibold text-gray-700 dark:text-white">The lowest price</h6>
-                <p className="mt-2 text-gray-600">Airdrop 1,000 cNFTs with only 1$</p>
-              </div>
-              <div className="text-center flex-1">
-                <h6 className="text-lg font-semibold text-gray-700 dark:text-white">No Code</h6>
-                <p className="mt-2 text-gray-600">
-                  Easy to launch your NFT airdrop without writing a single line of code.
-                </p>
-              </div>
-              <div className="text-center flex-1">
-                <h6 className="text-lg font-semibold text-gray-700 dark:text-white">Powerful SDKs</h6>
-                <p className="mt-2 text-gray-500">
-                  Easily integrate the airdrop API and wallet management API into your business workflow. (Coming Soon)
-                </p>
+            <div className="mt-10">
+              <div
+                className=""
+                style={{
+                  position: "relative",
+                  paddingBottom: "56.25%",
+                  height: 0,
+                }}
+              >
+                <iframe
+                  src="https://www.loom.com/embed/c03ea0ecd1594dd09cbb79ec12ec393d?sid=d0bb612e-3d70-4441-8d87-2bd4c9ca2fbf"
+                  frameBorder="0"
+                  allowFullScreen
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                  }}
+                ></iframe>
               </div>
             </div>
           </div>
