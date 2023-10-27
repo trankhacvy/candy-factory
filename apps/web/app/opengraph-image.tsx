@@ -24,11 +24,7 @@ export default async function Image() {
           textAlign: "center",
         }}
       >
-        <img
-          src="https://candy-factory-m1yvqi6u4-khacvy93.vercel.app/_next/image?url=%2Fassets%2Flogo.png&w=96&q=75"
-          width={160}
-          height={160}
-        />
+        <img src="/assets/logo.png" width={160} height={160} />
 
         <div
           style={{

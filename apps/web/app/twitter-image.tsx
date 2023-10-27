@@ -25,7 +25,7 @@ export default async function Image() {
         }}
       >
         <img
-          src="https://candy-factory-m1yvqi6u4-khacvy93.vercel.app/_next/image?url=%2Fassets%2Flogo.png&w=96&q=75"
+          src="/assets/logo.png"
           width={160}
           height={160}
         />
